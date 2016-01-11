@@ -1,0 +1,38 @@
+How to setup django-mongodb
+
+**Goto: http://django-mongodb-engine.readthedocs.org/en/latest/topics/setup.html#installation [follow the instructions]
+
+To set up a virtual environment for your project, use: virtualenv myproject
+
+To join the environment, use (in Bash): source myproject/bin/activate
+
+**Change all “django.db.backends.util” to “django.db.backends.utils”
+	- vi /Users/halimaolapade/Documents/git_projects/wikidiggly_back/lib/python2.7/site-packages/djangotoolbox/db/utils.py
+	- vi /Users/halimaolapade/Documents/git_projects/wikidiggly_back/lib/python2.7/site-packages/django_mongodb_engine/utils.py
+
+** Change pymong version to 2.8: use -> pip install pymongo==2.8
+** Install MongoDB, goto http://www.journaldev.com/2330/how-to-install-mongodb-on-mac-os-x-and-run-as-service
+** mongodb is at /etc/mongodb
+** Start mongodb service: ./mongod --dbpath /etc/mongodb/data &
+
+makemigrations -> syncdb
+
+article = Article(title="Halima's Article", content="this is an article", comments=Comment(name="Comment 1", content="This is a comment"))
+
+Delete object: Article.objects.filter(title="test title").delete()
+
+Wikipedia API: https://en.wikipedia.org/w/api.php?action=query&titles=asteroid&prop=revisions&rvprop=content&format=json
+
+
+Working with Models in the Django Shell:
+- from wiki_app.models import Topic
+- from wiki_app.models import TopicLink
+- from wiki_app.models import SectionLink
+
+
+Things that are installed:
+	- virtualenv
+	- django
+	- mongodb
+	- requests
+	- 

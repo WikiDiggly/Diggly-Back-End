@@ -1,0 +1,30 @@
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.vi
+*.pyc
+*.Python
+*.txt.sb*
+*~*
+*.sass-cache
+
+# OS or Editor folders
+**/.DS_Store
+**/.cache
+**/.project
+**/.settings
+**/.tmproj
+**/nbproject
+
+# Directories to ignore
+/lib
+/bin
+/include
+
+# Specific files to ignore
+/pip-selfcheck.json

@@ -1,0 +1,30 @@
+{
+    "topic": { 
+        "name": "Solar System",
+        "link": "https://en.wikipedia.org/wiki/Solar_System",
+        "descriptionHTML": "<p>The <b>Solar System<\/b> comprises the <a href=\"\/wiki\/Sun\" title=\"Sun\">Sun<\/a> and the <a href=\"\/wiki\/Planetary_system\" title=\"Planetary system\">planetary system<\/a> that orbits it, either directly or <a href=\"\/wiki\/Natural_satellite\" title=\"Natural satellite\">indirectly<\/a>. Of those objects that orbit the Sun directly, the largest eight are the <a href=\"\/wiki\/Planet\" title=\"Planet\">planets<\/a>, with the remainder being significantly smaller objects, such as <a href=\"\/wiki\/Dwarf_planet\" title=\"Dwarf planet\">dwarf planets<\/a> and <a href=\"\/wiki\/Small_Solar_System_body\" title=\"Small Solar System body\">small Solar System bodies<\/a> such as <a href=\"\/wiki\/Comet\" title=\"Comet\">comets<\/a> and <a href=\"\/wiki\/Asteroid\" title=\"Asteroid\">asteroids<\/a>. Of those that orbit the Sun indirectly, like the <a href=\"\/wiki\/Natural_satellite\" title=\"Natural satellite\">moons<\/a>, two are larger than the smallest planet <a href=\"\/wiki\/Mercury_(planet)\" title=\"Mercury (planet)\">Mercury<\/a>.<\/p>",
+        "meta": {
+            "Age": "4.568 Billion Years",
+            "System Mass": "1.0014 Solar masses"
+        },
+        "finalScore": 2.5,
+        "subtopics": [
+            {
+                "1": {
+                    "name": "Sun",
+                    "link": "https://en.wikipedia.org/wiki/Sun",
+                    "descriptionHTML": "<p>The <b>Sun<\/b> (in <a href=\"\/wiki\/Greek_language\" title=\"Greek language\">Greek<\/a>: <i>Helios<\/i>, in <a href=\"\/wiki\/Latin\" title=\"Latin\">Latin<\/a>: <i>Sol<\/i>) is the <a href=\"\/wiki\/Star\" title=\"Star\">star<\/a> at the center of the <a href=\"\/wiki\/Solar_System\" title=\"Solar System\">Solar System<\/a> and is by far the most important source of <a href=\"\/wiki\/Energy\" title=\"Energy\">energy<\/a> for life on Earth. It is a nearly perfect spherical ball of hot <a href=\"\/wiki\/Plasma_(physics)\" title=\"Plasma (physics)\">plasma<\/a>, with internal <a href=\"\/wiki\/Convection\" title=\"Convection\">convective<\/a> motion that generates a <a href=\"\/wiki\/Magnetic_field\" title=\"Magnetic field\">magnetic field<\/a> via a <a href=\"\/wiki\/Solar_dynamo\" title=\"Solar dynamo\">dynamo process<\/a>. Its diameter is about 109 times that of <a href=\"\/wiki\/Earth\" title=\"Earth\">Earth<\/a>, and it has a <a href=\"\/wiki\/Solar_mass\" title=\"Solar mass\">mass<\/a> about 330,000 times that of Earth, accounting for about 99.86% of the total mass of the Solar System. About three quarters of the Sun's mass consists of <a href=\"\/wiki\/Hydrogen\" title=\"Hydrogen\">hydrogen<\/a>; the rest is mostly <a href=\"\/wiki\/Helium\" title=\"Helium\">helium<\/a>, with much smaller quantities of heavier elements, including <a href=\"\/wiki\/Oxygen\" title=\"Oxygen\">oxygen<\/a>, <a href=\"\/wiki\/Carbon\" title=\"Carbon\">carbon<\/a>, <a href=\"\/wiki\/Neon\" title=\"Neon\">neon<\/a> and <a href=\"\/wiki\/Iron\" title=\"Iron\">iron<\/a>.<\/p>",
+                    "meta" : {
+                        "Mean distance from Earth": "8 min 19s at light speed",
+                        "Age": "≈4.6 billion years"
+                    },
+                    "finalScore": 1,
+                    "type": "outlink"
+                },
+                "2": {
+                    
+                }
+            }
+        ]
+    }
+}
