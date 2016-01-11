@@ -65,3 +65,13 @@ Django Installation Steps:
       `pip install nltk`    
 
   
+You will have to setup Django superuser in order to use the admin site in your browser (see [here](https://docs.djangoproject.com/en/1.9/intro/tutorial02/#introducing-the-django-admin))
+
+Next, start Mongodb mongod instance using the following command (see [here](https://docs.mongodb.org/manual/tutorial/manage-mongodb-processes/#start-mongod-processes))
+  
+Next, start the Django development server (see [here](https://docs.djangoproject.com/en/1.9/intro/tutorial01/#the-development-server)) 
+
+Finally, if the server is started without any problems, you should see a console output that tells you which port the server is listening on. By default, Django uses 8000. So if you use the default port, you should be able to access the application at "http://127.0.0.1:8000/"
+
+**Testing the Diggly application:**
+  - See the diggly/urls.py file for defined application routes and example usage.
