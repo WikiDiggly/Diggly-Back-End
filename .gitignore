@@ -21,9 +21,10 @@
 **/.tmproj
 **/nbproject
 
+# Directory contents to ignore
+/bin/*
+
 # Directories to ignore
-/lib
-/bin
 /include
 
 # Specific files to ignore

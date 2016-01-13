@@ -3,28 +3,32 @@ from django.http import HttpResponse
 from django.core import serializers
 from django.utils import simplejson
 from itertools import chain
-from models import *
+
+from models import Topic, TopicLink
+from diggly_serializers import TopicSerializer, TopicLinkSerializer
+
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+
 
 # 2015 wiki_diggly
 # author: ola-halima
 # prototype v1
+
+#An HttpResponse that renders its content into JSON
+class JSONResponse(HttpResponse):
+    def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
 
 def index(request):
     return HttpResponse("Hello! Welcome to the Diggly index.")
 
 def list_topics(request):
     topics = Topic.objects.all()
-    data = serializers.serialize("json", topics, 
-            fields=('article_id', 
-                    'article_title', 
-                    'summary', 
-                    'description', 
-                    'wiki_link', 
-                    'created', 
-                    'modified')
-    
-)
-    return HttpResponse(data)
+    serializer = TopicSerializer(topics, many=True)
+    return JSONResponse(serializer.data)
 
 def explore_topic(request, tid):
     print "LOG: explore_topic; id  ->", tid
@@ -56,7 +60,8 @@ def explore_topic(request, tid):
                         'section_wiki_link', 
                         'score'))
     
-        data = simplejson.dumps([topic_data, rel_data])
+        data = topic_data
+        #data = simplejson.dumps([topic_data, rel_data])
         
     except Topic.DoesNotExist:
         raise Http404("Topic does not exist")
@@ -68,13 +73,13 @@ def get_topic_id(request, tid):
     print "LOG: get_topic_title; tid ->", tid
     
     try:
-        obj = Topic.objects.get(article_id=tid)
-        data = json.dumps(obj.to_json())
+        topic = Topic.objects.get(article_id=tid)
+        serializer = TopicSerializer(topic)
     
     except Topic.DoesNotExist:
         raise Http404("Topic does not exist")
-        
-    return HttpResponse(data, content_type="application/json")
+    
+    return JSONResponse(serializer.data)
 
 
 #helper method
@@ -83,37 +88,26 @@ def get_topic_links(request, tid):
     print "LOG: get_topic_links; tid ->", tid
 
     try:
-        print "LOG Attemptign to retrieve the topic now"
         topic = Topic.objects.get(article_id=tid)
-        print "LOG The topic returned is:::::", topic
         topiclinks = topic.topiclink_source.all()
-        data = serializers.serialize("json", topiclinks, 
-                fields=('source_id', 
-                        'target_id', 
-                        'description', 
-                        'score'))  
+        serializer = TopicLinkSerializer(topiclinks, many=True)
  
     except Topic.DoesNotExist:
         raise Http404("Topic does not exist")
 
-    return HttpResponse(data, content_type="application/json")
+    return JSONResponse(serializer.data)
 
 #helper method
 #do not use in production
-def get_section_links(request, tid):
-    print "LOG: get_section_links; tid ->", tid
+#def get_section_links(request, tid):
+#    print "LOG: get_section_links; tid ->", tid
 
-    try:
-        topic = Topic.objects.get(article_id=tid) 
-        sectionlinks = topic.sectionlink_source.all()
-        data = serializers.serialize("json", sectionlinks, 
-                fields=('source_id',
-                        'section_title', 
-                        'main_article_id', 
-                        'section_wiki_link', 
-                        'score'))
+#    try:
+#        topic = Topic.objects.get(article_id=tid) 
+#        sectionlinks = topic.sectionlink_source.all()
+#        serializer = SectionLinkSerializer(sectionlinks, many=True)
     
-    except Topic.DoesNotExist:
-        raise Http404("Topic does not exist")
+#    except Topic.DoesNotExist:
+#        raise Http404("Topic does not exist")
 
-    return HttpResponse(data, content_type="application/json")            
+#    return JSONResponse(serializer.data)            

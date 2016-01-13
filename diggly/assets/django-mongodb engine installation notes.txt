@@ -2,7 +2,9 @@ How to setup django-mongodb
 
 **Goto: http://django-mongodb-engine.readthedocs.org/en/latest/topics/setup.html#installation [follow the instructions]
 
-To set up a virtual environment for your project, use: virtualenv myproject
+To set up a virtual environment for your project, use: 
+	- myproject
+	- also run “virtual env project”
 
 To join the environment, use (in Bash): source myproject/bin/activate
 
@@ -30,9 +32,4 @@ Working with Models in the Django Shell:
 - from wiki_app.models import SectionLink
 
 
-Things that are installed:
-	- virtualenv
-	- django
-	- mongodb
-	- requests
-	- 
+- install rest-framework
