@@ -1,13 +1,16 @@
 import json
-from django.http import HttpResponse  
 from django.core import serializers
+from django.http import Http404
+from django.http import HttpResponse  
+from django.forms.models import model_to_dict
 from django.utils import simplejson
 from itertools import chain
 
 from models import Topic, TopicLink
-from diggly_serializers import TopicSerializer, TopicLinkSerializer
+from util.diggly_serializers import TopicSerializer, TopicLinkSerializer
+from util.wikipedia_api import WikipediaHelper
 
-from rest_framework.renderers import JSONRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework.parsers import JSONParser
 
 
@@ -15,12 +18,10 @@ from rest_framework.parsers import JSONParser
 # author: ola-halima
 # prototype v1
 
-#An HttpResponse that renders its content into JSON
-class JSONResponse(HttpResponse):
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+description_len = 15
+summary_len = 2
+
+wiki_help = WikipediaHelper(description_len, summary_len)
 
 def index(request):
     return HttpResponse("Hello! Welcome to the Diggly index.")
@@ -35,41 +36,14 @@ def explore_topic(request, tid):
 
     try:
         topic = Topic.objects.get(article_id=tid)
-        topiclist = topic.topiclink_source.all()
-        sectionlist = topic.sectionlink_source.all()
-       
-        topic_data = json.dumps(topic.to_json())
- 
-        #combine topiclist and sectionlist, sort in ascending order by score
-        all_rel = sorted(
-                    chain(topiclist, sectionlist),
-                    key=lambda instance: instance.score, reverse=True)
-
-        #serialize data
-        rel_data = serializers.serialize("json", all_rel, 
-                fields=('article_id',
-                        'article_title',
-                        'summary',
-                        'wiki_link',
-                        'source_id', 
-                        'target_id', 
-                        'description', 
-                        'redirect_article_id', 
-                        'section_title', 
-                        'main_article_id', 
-                        'section_wiki_link', 
-                        'score'))
-    
-        data = topic_data
-        #data = simplejson.dumps([topic_data, rel_data])
+        data = json.dumps(topic.to_json())
         
     except Topic.DoesNotExist:
         raise Http404("Topic does not exist")
 
-    #FIXME: is returning 2 json objects optimal?
     return HttpResponse(data, content_type="application/json")        
 
-def get_topic_id(request, tid):
+def get_topic_by_id(request, tid):
     print "LOG: get_topic_title; tid ->", tid
     
     try:
@@ -77,15 +51,18 @@ def get_topic_id(request, tid):
         serializer = TopicSerializer(topic)
     
     except Topic.DoesNotExist:
-        raise Http404("Topic does not exist")
+        print "[LOG] attempting to fetch data from wikipedia"
+        topics = wiki_help.get_article(tid)
+        topic = topics[0] 
+        serializer = TopicSerializer(topic)
     
     return JSONResponse(serializer.data)
 
 
 #helper method
 #do not use in production
-def get_topic_links(request, tid):
-    print "LOG: get_topic_links; tid ->", tid
+def get_all_topiclinks(request, tid):
+    print "LOG: get_all_topiclinks; tid ->", tid
 
     try:
         topic = Topic.objects.get(article_id=tid)
@@ -96,6 +73,39 @@ def get_topic_links(request, tid):
         raise Http404("Topic does not exist")
 
     return JSONResponse(serializer.data)
+
+def get_top_topiclinks(request, tid):
+    print "LOG: get_all_topiclinks; tid ->", tid
+
+    try:
+        topic = Topic.objects.get(article_id=tid)
+        topiclinks = topic.linked_topics
+        serializer = TopicLinkSerializer(topiclinks, many=True)
+
+    except Topic.DoesNotExist:
+        raise Http404("Topic does not exist")
+    
+    return JSONResponse(serializer.data)
+
+def convertTopicLink(topiclinks):
+    res = []
+
+    for tl in topiclinks:
+        tmp = model_to_dict(tl)
+        print "tmp ->", tmp
+        res.append(model_to_dict(tl))
+
+    return res
+
+#An HttpResponse that renders its content into JSON
+class JSONResponse(HttpResponse):
+    def __init__(self, data, **kwargs):
+    
+        #print data['linked_topics']   
+     
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
 
 #helper method
 #do not use in production

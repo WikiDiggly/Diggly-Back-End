@@ -23,6 +23,7 @@
 
 # Directory contents to ignore
 /bin/*
+/lib/*
 
 # Directories to ignore
 /include

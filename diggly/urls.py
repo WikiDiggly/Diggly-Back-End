@@ -4,24 +4,27 @@ from . import views
 urlpatterns = [
     #ex: /diggly/
     url(r'^$', views.index, name='index'),
-
-    #rest-framework browsable api
-    url(r'^api-auth/', 'rest_framework.urls', name='rest_framework'),
     
     #ex: /diggly/topics/
     url(r'^topics/$', views.list_topics, name='list_topics'),
     
     #ex: /diggly/topics/791/ 
-    url(r'^topics/(?P<tid>[0-9]+)/$', views.get_topic_id, name='get_topic'),    
+    url(r'^topics/(?P<tid>[0-9]+)/$', views.get_topic_by_id, name='get_topic_by_id'),    
 
-    #ex: /diggly/topics/related/791/ 
-    url(r'^topics/related/(?P<tid>[0-9]+)/$', views.get_topic_links, name='get_topic_links'),
+    #ex: /diggly/topics/related//all/791/ 
+    url(r'^topics/related/all/(?P<tid>[0-9]+)/$', views.get_all_topiclinks, name='get_all_topiclinks'),
+
+    #ex: /diggly/topics/related/top/791/ 
+    url(r'^topics/related/top/(?P<tid>[0-9]+)/$', views.get_top_topiclinks, name='get_top_topiclinks'),
+
+    #ex: /diggly/topics/explore/791/ 
+    url(r'^topics/explore/(?P<tid>[0-9]+)/$', views.explore_topic, name='explore_topic'),
 
     #ex: /diggly/topics/sections/related/791/ 
     #url(r'^topics/sections/(?P<tid>[0-9]+)/$', views.get_section_links, name='get_section_links'),
-
-    #ex: /diggly/topics/sections/related/791/ 
-    url(r'^topics/explore/(?P<tid>[0-9]+)/$', views.explore_topic, name='explore_topic'),
+    
+    #rest-framework browsable api
+    #url(r'^api-auth/', 'rest_framework.urls', name='rest_framework'),
 
     #ex: /diggly/topics/solar_system/
     #TODO: uses '.*' to match any string
