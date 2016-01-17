@@ -17,7 +17,8 @@ class TopicCreator():
                         article_id = data.article_id,
                         description = data.description,
                         summary = data.summary,
-                        wiki_link = data.wiki_link) 
+                        wiki_link = data.wiki_link,
+                        linked_topics = data.linked_topics) 
 
         return topic
 

@@ -95,7 +95,8 @@ def convertTopicLink(topiclinks):
         print "tmp ->", tmp
         res.append(model_to_dict(tl))
 
-    return res
+    res_sorted = sorted(res, key=lambda instance: instance.score, reverse=True)
+    return res_sorted
 
 #An HttpResponse that renders its content into JSON
 class JSONResponse(HttpResponse):
