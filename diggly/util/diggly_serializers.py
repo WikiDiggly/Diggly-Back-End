@@ -13,12 +13,12 @@ class TopicLinkSerializer(serializers.ModelSerializer):
 
 class TopicCreator():
     def create_topic(self, data):
-        topic = Topic(article_title = data.article_title,
-                        article_id = data.article_id,
-                        description = data.description,
-                        summary = data.summary,
-                        wiki_link = data.wiki_link,
-                        linked_topics = data.linked_topics) 
+        topic = Topic(article_title = data['article_title'],
+                        article_id = data['article_id'],
+                        description = data['description'],
+                        summary = data['summary'],
+                        wiki_link = data['wiki_link'],
+                        linked_topics = data['linked_topics']) 
 
         return topic
 

@@ -1,4 +1,8 @@
 import nltk
+import sys;
+reload(sys);
+sys.setdefaultencoding("utf8")
+
 
 # 2016 wiki_diggly
 # author: ola-halima
@@ -32,9 +36,9 @@ class Text_Process():
 
     #private functions
     def __get_sentences(self, content, length):
+        #print "CONTENT in TEXT_PROCESS -->", content
         sentences = nltk.sent_tokenize(content.decode('utf-8'))
-        res = sentences[0 : length] 
-
+        res = " ".join(sentences[0:length]) 
         return res
 
     def __get_words(self, content, length):
@@ -42,5 +46,3 @@ class Text_Process():
         res = ""
         return res
      
-        
-

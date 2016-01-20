@@ -1,4 +1,7 @@
 import sys
+reload(sys);
+sys.setdefaultencoding("utf8")
+
 import os
 import requests
 
@@ -10,9 +13,11 @@ from ..models import Topic, TopicLink
 # author: ola-halima
 # prototype v1
 
-base_url= "https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&formatversion=2&{}"
-base_url_extract= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&{}"
+base_url_rev= "https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&formatversion=2&{}"
+base_url_extract= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext=&{}"
+base_url_parse= "https://en.wikipedia.org/w/api.php?action=parse&prop=sections|links&contentformat=text/plain&pageid={}"
 wiki_url_base= "https://en.wikipedia.org/wiki/{}"
+excontinue= "&excontinue={}"
 exintro= "&exintro="
 exsentences= "&exsentences={}"
 r_title= "title={}"
@@ -20,8 +25,8 @@ r_pageid= "pageids={}"
 arg_seperator= "|" 
 
 class WikipediaHelper():
-    desc_len = 0
-    summ_len = 0 
+    desc_len = 6
+    summ_len = 1 
     t_processor = Text_Process(desc_len, summ_len)
     t_creator = TopicCreator()
 
@@ -34,6 +39,8 @@ class WikipediaHelper():
         resources = self.format_req(r_args)
 
         r_url = base_url_extract.format(resources)
+        
+        #TODO: check if excontinue flag is True
         resp = requests.get(r_url)
 
         if resp.status_code != 200:
@@ -48,27 +55,30 @@ class WikipediaHelper():
 
     def parse_pages(self, pages):
         topics = []
-        print pages
 
-        for page in pages:
-            print page
-            #TODO: find way to trip content length from api call
-            content = page['extract'] #TODO: fix this to make bug proof
+        for pid in pages:
+            #TODO: trim content length from api call
+            pcontent = pages[pid]
+            title = pcontent['title']
+            content = pcontent['extract'].encode('utf-8') #TODO: fix this to make bug proof
             
-            print content
+            #print content
             parsedtext = self.t_processor.get_desc_summ(content)
 
-            data = {"article_id" : int(page['pageid']),
-                    "article_title" : page['title'],
+            data = {"article_id" : int(pid),
+                    "article_title" : title,
                     "description" : parsedtext[self.t_processor.desc_text],
                     "summary" : parsedtext[self.t_processor.summ_text],
-                    "wiki_link" : wiki_url_base.format("_".join(title.split()))}
+                    "wiki_link" : wiki_url_base.format("_".join(title.split())),
+                    "linked_topics" : []
+                    }
             #TODO: fix url generation
 
             topic = self.t_creator.create_topic(data)        
+            topic.save()
             topics.append(topic)
 
-        return topic
+        return topics
 
     def format_req(self, r_args):
         if self.__is_seq(r_args): # check if arg is a list

@@ -49,7 +49,8 @@ def get_topic_by_id(request, tid):
     try:
         topic = Topic.objects.get(article_id=tid)
         serializer = TopicSerializer(topic)
-    
+        print "[LOG] retrieving topic request from MongoDB"   
+ 
     except Topic.DoesNotExist:
         print "[LOG] attempting to fetch data from wikipedia"
         topics = wiki_help.get_article(tid)
