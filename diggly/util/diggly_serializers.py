@@ -22,19 +22,14 @@ class TopicCreator():
 
         return topic
 
+class TopicLinkCreator():
+    def create_topiclink(self, data):
+        topiclink = TopicLink(source_id = data['source_id'],
+                        target_id = data['target_id'],
+                        title = data['title'],
+                        description = data['description'],
+                        wiki_link = data['wiki_link'],
+                        score = data['score']) 
 
-#converts topic and topiclink or sectionlink to json object
-#class TopicExploreSerializer(serializers.Serializer):
-#    article_title = serializers.CharField(required=True, allow_blank=False, max_length=256)
-#    article_id = serializers.IntegerField(read_only=True)
-#    description = serializers.CharField(required=True, allow_blank=False)
-#    summary = serializers.CharField(required=True, allow_blank=False, max_length=1028)
-#    wiki_link = serializers.URLField(required=True)
-#    linked_topics = serializers.ListField(TopicLink()) #TODO: validate child arguments?
+        return topiclink
 
-#    m_topic = Topic
-#    l_topics = TopicLink
-
-#    def create(self, topicObj, linkedObj):
-#        tExplorer = TopicExplorer(main_topic = m_topic, linked_topics = l_topics )     
-#        return tExplorer
