@@ -97,10 +97,17 @@ class WikipediaHelper():
             topiclinks.append(tlink)
 
         sorted_tl = sorted(topiclinks, key=lambda instance: instance.score, reverse=True)
-
-        for i in range (2): #add the top 3 linked_topics to the source_topic
-            source_topic.linked_topics.append(sorted_tl[i])
+        num_links = 2
         
+        #to prevent Index out of bounds error on sorted_tl
+        i = 0
+        for tl in sorted_tl:
+            if (i <= num_links):
+                source_topic.linked_topics.append(tl)        
+                i = i + 1
+            else:
+                break
+
         source_topic.save()
         #return source_topic        
 
@@ -131,28 +138,34 @@ class WikipediaHelper():
 
         for pid in pages:
             #TODO: trim content length from api call
-            #linked_topics = 
-            pcontent = pages[pid]
-            title = pcontent['title']
-            #print "\n\nPCONTENT ---> ", pcontent, "\n\n"
+            topic = None
             
-            content = pcontent['extract'].encode('utf-8') #TODO: fix this to make bug proof
-            parsedtext = self.t_processor.get_desc_summ(content)
+            try:
+                topic = Topic.objects.get(article_id=pid)
+            
+            except Topic.DoesNotExist:
+                pcontent = pages[pid]
+                title = pcontent['title']
+                #print "\n\nPCONTENT ---> ", pcontent, "\n\n"
+            
+                content = pcontent['extract'].encode('utf-8') #TODO: fix this to make bug proof
+                parsedtext = self.t_processor.get_desc_summ(content)
 
-            data = {"article_id" : int(pid),
-                    "article_title" : title,
-                    "description" : parsedtext[self.t_processor.desc_text],
-                    "summary" : parsedtext[self.t_processor.summ_text],
-                    "wiki_link" : wiki_url_base.format(title_sep.join(title.split())),
-                    "linked_topics" : []
-                    }
-            #TODO: fix url generation
+                data = {"article_id" : int(pid),
+                        "article_title" : title,
+                        "description" : parsedtext[self.t_processor.desc_text],
+                        "summary" : parsedtext[self.t_processor.summ_text],
+                        "wiki_link" : wiki_url_base.format(title_sep.join(title.split())),
+                        "linked_topics" : []
+                        }
+                #TODO: fix url generation
 
-            topic = self.t_creator.create_topic(data)     
-            #final_topic = self.add_linked_topics(topic)   
-            topic.save() 
-            topics.append(topic)
-
+                topic = self.t_creator.create_topic(data)     
+                topic.save() 
+         
+            if topic != None:   
+                topics.append(topic)
+        
         return topics
 
     def __get_article_links(self, r_args):

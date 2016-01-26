@@ -36,10 +36,17 @@ def explore_topic(request, tid):
 
     try:
         topic = Topic.objects.get(article_id=tid)
+        
+        if len(topic.linked_topics) == 0:
+            wiki_help.add_linked_topics(topic)
+
         data = json.dumps(topic.to_json())
         
     except Topic.DoesNotExist:
-        raise Http404("Topic does not exist")
+        print "[LOG] attempting to fetch data from wikipedia"
+        topics = wiki_help.get_article(tid)
+        topic = topics[0] 
+        data = json.dumps(topic.to_json())
 
     return HttpResponse(data, content_type="application/json")        
 
@@ -52,11 +59,8 @@ def get_topic_by_id(request, tid):
         print "[LOG] retrieving topic request from MongoDB"   
  
     except Topic.DoesNotExist:
-        print "[LOG] attempting to fetch data from wikipedia"
-        topics = wiki_help.get_article(tid)
-        topic = topics[0] 
-        serializer = TopicSerializer(topic)
-    
+        raise Http404("Topic does not exist")
+ 
     return JSONResponse(serializer.data)
 
 
