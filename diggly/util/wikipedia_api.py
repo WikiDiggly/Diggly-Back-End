@@ -7,7 +7,7 @@ import requests
 import random
 
 from text_process import Text_Process
-from .diggly_serializers import TopicCreator, TopicLinkCreator, TopicLinkSerializer
+from .diggly_serializers import TopicManager, TopicLinkManager, TopicLinkSerializer
 from ..models import Topic, TopicLink
 
 # 2016 wikidiggly
@@ -36,8 +36,8 @@ class WikipediaHelper():
     desc_len = 6
     summ_len = 1 
     t_processor = Text_Process(desc_len, summ_len)
-    t_creator = TopicCreator()
-    tl_creator = TopicLinkCreator()
+    t_creator = TopicManager()
+    tl_creator = TopicLinkManager()
 
     @classmethod
     def __init__(self, desc_len, summ_len): 
@@ -93,7 +93,7 @@ class WikipediaHelper():
                     }
 
             tlink = self.tl_creator.create_topiclink(tldata)
-            tlink.save()
+            #tlink.save()
             topiclinks.append(tlink)
 
         sorted_tl = sorted(topiclinks, key=lambda instance: instance.score, reverse=True)
@@ -108,7 +108,7 @@ class WikipediaHelper():
             else:
                 break
 
-        source_topic.save()
+        #source_topic.save()
         #return source_topic        
 
     #private functions

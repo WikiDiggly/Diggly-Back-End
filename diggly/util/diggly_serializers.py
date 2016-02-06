@@ -11,7 +11,7 @@ class TopicLinkSerializer(serializers.ModelSerializer):
         model = TopicLink
         fields = ('source_id', 'target_id', 'description', 'score')
 
-class TopicCreator():
+class TopicManager():
     def create_topic(self, data):
         topic = Topic(article_title = data['article_title'],
                         article_id = data['article_id'],
@@ -20,9 +20,16 @@ class TopicCreator():
                         wiki_link = data['wiki_link'],
                         linked_topics = data['linked_topics']) 
 
+        topic.save()
         return topic
 
-class TopicLinkCreator():
+    #def delete_topic(self, tid):
+        #topic = Topic.objects.get(article_id=tid) 
+        #Topic.objects.remove(topic)
+
+        #return topic
+    
+class TopicLinkManager():
     def create_topiclink(self, data):
         topiclink = TopicLink(source_id = data['source_id'],
                         target_id = data['target_id'],
@@ -31,5 +38,7 @@ class TopicLinkCreator():
                         wiki_link = data['wiki_link'],
                         score = data['score']) 
 
+        topiclink.save()
         return topiclink
 
+    #def delete_topiclink(seld, tid):
