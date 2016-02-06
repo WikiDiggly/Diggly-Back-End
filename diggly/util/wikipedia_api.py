@@ -33,16 +33,20 @@ arg_sep= "|"
 title_sep = "_"
 
 class WikipediaHelper():
-    desc_len = 6
-    summ_len = 1 
-    t_processor = Text_Process(desc_len, summ_len)
-    t_creator = TopicManager()
-    tl_creator = TopicLinkManager()
+    #desc_length = 6
+    #summ_length = 1 
+    #t_processor = None
+    #t_creator = None
+    #tl_creator = None
 
     @classmethod
     def __init__(self, desc_len, summ_len): 
-        desc_length = desc_len
-        summ_length = summ_len    
+        self.desc_length = desc_len
+        self.summ_length = summ_len    
+    
+        self.t_processor = Text_Process(self.desc_length, self.summ_length)
+        self.t_creator = TopicManager()
+        self.tl_creator = TopicLinkManager()
 
     def get_article(self, r_args):
         nlinks = self.__count_articles(r_args)
@@ -54,7 +58,7 @@ class WikipediaHelper():
         #r_url = extract_url.format(r_title.format("Absolute_zero|Pluto|August_14"))
         #r_url = extract_url.format(r_pageid.format("1418|1417"))
         
-        pages = self.__make_query_request(r_url, excont, retrieve_flag, nlinks)
+        pages = self.make_query_request(r_url, excont, retrieve_flag, nlinks)
         topics = self.__parse_pages(pages)
 
         for tp in topics:
@@ -70,14 +74,14 @@ class WikipediaHelper():
 
         #TODO: check if plcontinue flag is True
         retrieve_flag = "links"
-        pages = self.__make_query_request(r_url, None, retrieve_flag, nlinks) #TODO: add plcontinue support
+        pages = self.make_query_request(r_url, None, retrieve_flag, nlinks) #TODO: add plcontinue support
         linked_titles = self. __parse_linked_pages(tid, pages)    
 
         #create topic objects for linked topics
         r_url = extract_url.format(r_title.format(arg_sep.join(linked_titles))) 
         nlinks =  self.__count_articles(linked_titles)
         retrieve_flag = "extract"
-        linked_pages = self.__make_query_request(r_url, excont, retrieve_flag,  nlinks)
+        linked_pages = self.make_query_request(r_url, excont, retrieve_flag,  nlinks)
         linked_topics = self.__parse_pages(linked_pages)
         topiclinks = []
 
@@ -129,7 +133,7 @@ class WikipediaHelper():
 
             if links != None:
                 for lk in links:
-                   titles.append(title_sep.join(lk["title"].split())) #get title of linked article
+                   titles.append(lk["title"].replace(" ", title_sep)) #get title of linked article
 
             return titles
     
@@ -155,7 +159,7 @@ class WikipediaHelper():
                         "article_title" : title,
                         "description" : parsedtext[self.t_processor.desc_text],
                         "summary" : parsedtext[self.t_processor.summ_text],
-                        "wiki_link" : wiki_url_base.format(title_sep.join(title.split())),
+                        "wiki_link" : wiki_url_base.format(title.replace(" ", title_sep)),
                         "linked_topics" : []
                         }
                 #TODO: fix url generation
@@ -168,15 +172,15 @@ class WikipediaHelper():
         
         return topics
 
-    def __get_article_links(self, r_args):
-        nlinks = self.__count_articles(r_args)
-        resources = self.__format_req(r_args)
-        r_url = extract_url.format(resources)
+    #def __get_article_links(self, r_args):
+    #    nlinks = self.__count_articles(r_args)
+    #    resources = self.__format_req(r_args)
+    #    r_url = extract_url.format(resources)
 
-        pages = self.__make_query_request(r_url, "excontinue", nlinks)
-        topics = self.__parse_pages(pages)
+    #    pages = self.make_query_request(r_url, "excontinue", nlinks)
+    #    topics = self.__parse_pages(pages)
  
-        return topics
+    #    return topics
 
     def __count_articles(self, r_args):
         if self.__is_seq(r_args):
@@ -198,7 +202,22 @@ class WikipediaHelper():
         #default return single page title format
         return r_title.format(r_args)
 
-    def __make_query_request(self, r_url, cont_flag, retrieve_flag, nlinks):
+    def request_pages_plain(self, url):
+        print "\nURL --->\n", url   
+        resp = requests.get(url)
+        
+        if resp.status_code != 200:
+            #TODO: handle exception better
+            raise ApiError('GET: api request error\n{}'.format(resp.status_code))
+            return None 
+
+        #TODO: catch Exception for "No JSON object could be decoded"
+        json_response = resp.json()
+        pages = json_response['query']['pages']        
+    
+        return pages
+    
+    def make_query_request(self, r_url, cont_flag, retrieve_flag, nlinks):
         #TODO: continue flag if neccessary
         all_pages = {}
         index = 0;

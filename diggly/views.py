@@ -9,6 +9,7 @@ from itertools import chain
 from models import Topic, TopicLink
 from util.diggly_serializers import TopicSerializer, TopicLinkSerializer
 from util.wikipedia_api import WikipediaHelper
+from util.jsonpedia_api import JsonPediaManager
 
 from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework.parsers import JSONParser
@@ -22,6 +23,7 @@ description_len = 15
 summary_len = 2
 
 wiki_help = WikipediaHelper(description_len, summary_len)
+jpedia_mgt = JsonPediaManager(description_len, summary_len)
 
 def index(request):
     return HttpResponse("Hello! Welcome to the Diggly index.")
@@ -35,8 +37,10 @@ def explore_topic(request, tid):
     print "LOG: explore_topic; id  ->", tid
 
     try:
+        print "[LOG] Retrieving data from MongoDB"
         topic = Topic.objects.get(article_id=tid)
         
+        #TODO: Also change this to JSONPEDIA
         if len(topic.linked_topics) == 0:
             wiki_help.add_linked_topics(topic)
 
@@ -44,7 +48,8 @@ def explore_topic(request, tid):
         
     except Topic.DoesNotExist:
         print "[LOG] attempting to fetch data from wikipedia"
-        topics = wiki_help.get_article(tid)
+        #topics = wiki_help.get_article(tid)
+        topics = jpedia_mgt.get_article(tid)
         topic = topics[0] 
         data = json.dumps(topic.to_json())
 
