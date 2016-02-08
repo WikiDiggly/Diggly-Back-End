@@ -23,7 +23,11 @@ class TopicManager():
         topic.save()
         return topic
 
+    #def update_topic(self, data):
+
     #def delete_topic(self, tid):
+        #tl = TopicLinkManager()
+        #tl.delete_mul_topiclink(listObjs)
         #topic = Topic.objects.get(article_id=tid) 
         #Topic.objects.remove(topic)
 
@@ -41,4 +45,6 @@ class TopicLinkManager():
         topiclink.save()
         return topiclink
 
-    #def delete_topiclink(seld, tid):
+    #def delete_topiclink(self, obj):
+
+    #def delete_mul_topiclinks(self, listtl):

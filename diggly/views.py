@@ -49,7 +49,7 @@ def explore_topic(request, tid):
     except Topic.DoesNotExist:
         print "[LOG] attempting to fetch data from wikipedia"
         #topics = wiki_help.get_article(tid)
-        topics = jpedia_mgt.get_article(tid)
+        topics = wiki_help.get_article(tid)
         topic = topics[0] 
         data = json.dumps(topic.to_json())
 

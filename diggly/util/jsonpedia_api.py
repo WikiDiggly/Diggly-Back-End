@@ -8,9 +8,9 @@ from .wikipedia_api import WikipediaHelper
 from ..models import Topic, TopicLink
 
 pageid_convert_url="https://en.wikipedia.org/w/api.php?action=query&format=json&{}"
-jpedia_base_url="https://michelemostarda-JSONpedia-v1.p.mashape.com/annotate/resource/json/{}?&procs=extractors,splitters,structure"
+jpedia_base_url="https://michelemostarda-JSONpedia-v1.p.mashape.com/annotate/resource/json/{}?&procs=extractors"
 
-eng_entity= "en%3A{}"
+eng_entity= "en:{}"
 r_title= "titles={}"
 r_pageid= "pageids={}"
 arg_sep= "|"
@@ -39,13 +39,36 @@ class JsonPediaManager():
         titles = self.__get_article_titles(r_args, nlinks)
 
         print "TITLES -->", titles 
+        for a_title in titles:
+            r_entity = eng_entity.format(a_title)
+            r_url = jpedia_base_url.format(r_entity) 
 
+            self.__fetch_article(r_url)   
 
-    def __fetch_article(self, r_url):
+    def __fetch_article(self, url):
+        print "\nURL --->\n", url  
+        headers={
+            "X-Mashape-Key": os.environ['MASHAPE_KEY'],
+            "Accept": "application/json"
+        } 
+
+        resp = requests.get(url, headers=headers)
+        print "RESP STATUS CODE -->", resp.status_code
+        print "RESP -->", resp.text
+
+        if resp.status_code != 200:
+            #TODO: handle exception better
+            raise requests.ApiError('GET: Jsonpedia api request error\n{}'.format(resp.status_code))
+            return None 
+    
+        json_response = resp.json()
+        pid = json_response['revid'] 
+
+        print "JSONPEDIA PID -->", pid
 
     def __get_article_titles(self, r_args, nlinks):
         resources = self.__format_req(r_args) #assume you receive pageids
-        resources = "pageids=26903|26521"
+        #resources = "pageids=26903|26521"
         r_url = pageid_convert_url.format(resources)
 
         retrieveflag = "title"

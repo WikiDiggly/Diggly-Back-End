@@ -112,7 +112,7 @@ class WikipediaHelper():
             else:
                 break
 
-        #source_topic.save()
+        source_topic.save()
         #return source_topic        
 
     #private functions
@@ -205,10 +205,10 @@ class WikipediaHelper():
     def request_pages_plain(self, url):
         print "\nURL --->\n", url   
         resp = requests.get(url)
-        
+      
         if resp.status_code != 200:
             #TODO: handle exception better
-            raise ApiError('GET: api request error\n{}'.format(resp.status_code))
+            raise ApiError('GET: Wikipedia api request error\n{}'.format(resp.status_code))
             return None 
 
         #TODO: catch Exception for "No JSON object could be decoded"
