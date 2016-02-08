@@ -3,6 +3,7 @@ reload(sys);
 sys.setdefaultencoding("utf8")
 
 import os
+import re
 import requests
 import random
 
@@ -17,13 +18,13 @@ from ..models import Topic, TopicLink
 rev_url= "https://en.wikipedia.org/w/api.php?&format=json&formatversion=2&action=query&prop=revisions&rvprop=content&{}"
 extract_url= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext=&{}"
 parse_url= "https://en.wikipedia.org/w/api.php?action=parse&prop=sections|links&contentformat=text/plain&pageid={}"
-linked_topics_url = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=links&pllimit=3&plnamespace=0&{}"
+linked_topics_url = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=links&pllimit=max&plnamespace=0&{}"
 sections_url = "https://en.wikipedia.org/w/api.php?action=parse&prop=sections&pageid=25202"
 wiki_url_base= "https://en.wikipedia.org/wiki/{}"
 
-rvcont= "&rvcontinue={}"
-excont= "&excontinue={}"
-plcont= "&plcontinue={}"
+rvcont= "rvcontinue"
+excont= "excontinue"
+plcont= "plcontinue"
 
 exintro= "&exintro="
 exsentences= "&exsentences={}"
@@ -58,7 +59,7 @@ class WikipediaHelper():
         #r_url = extract_url.format(r_title.format("Absolute_zero|Pluto|August_14"))
         #r_url = extract_url.format(r_pageid.format("1418|1417"))
         
-        pages = self.make_query_request(r_url, excont, retrieve_flag, nlinks)
+        pages = self.make_query_request(r_url, excont, retrieve_flag)
         topics = self.__parse_pages(pages)
 
         for tp in topics:
@@ -74,14 +75,18 @@ class WikipediaHelper():
 
         #TODO: check if plcontinue flag is True
         retrieve_flag = "links"
-        pages = self.make_query_request(r_url, None, retrieve_flag, nlinks) #TODO: add plcontinue support
+        pages = self.make_query_request(r_url, plcont, retrieve_flag) #TODO: add plcontinue support
         linked_titles = self. __parse_linked_pages(tid, pages)    
+
+        print "\n\nLINKED_TITLES -->", linked_titles
+        print "\nlen(LINKED_TITLES) -->", len(linked_titles)
+        return
 
         #create topic objects for linked topics
         r_url = extract_url.format(r_title.format(arg_sep.join(linked_titles))) 
         nlinks =  self.__count_articles(linked_titles)
         retrieve_flag = "extract"
-        linked_pages = self.make_query_request(r_url, excont, retrieve_flag,  nlinks)
+        linked_pages = self.make_query_request(r_url, excont, retrieve_flag)
         linked_topics = self.__parse_pages(linked_pages)
         topiclinks = []
 
@@ -109,8 +114,6 @@ class WikipediaHelper():
             if (i <= num_links):
                 source_topic.linked_topics.append(tl)        
                 i = i + 1
-            else:
-                break
 
         source_topic.save()
         #return source_topic        
@@ -127,13 +130,17 @@ class WikipediaHelper():
 
     def __parse_linked_pages(self, source_id, pages):
         if pages != None:
+            pattern = re.compile(r'\d\$,')
             titles = []
-            print "\n\n\nPAGES (links)", pages, "\n\n"
+            #print "\n\n\nPAGES (links)", pages, "\n\n"
             links = pages[str(source_id)]["links"]
 
             if links != None:
                 for lk in links:
-                   titles.append(lk["title"].replace(" ", title_sep)) #get title of linked article
+                    lk_title = lk["title"]
+                    #if re.match(r'^\w+$', lk_title):          
+                    if re.match(r'^[a-zA-Z-_() ]+$', lk_title):       
+                        titles.append(lk_title.replace(" ", title_sep)) #get title of linked article
 
             return titles
     
@@ -172,36 +179,6 @@ class WikipediaHelper():
         
         return topics
 
-    #def __get_article_links(self, r_args):
-    #    nlinks = self.__count_articles(r_args)
-    #    resources = self.__format_req(r_args)
-    #    r_url = extract_url.format(resources)
-
-    #    pages = self.make_query_request(r_url, "excontinue", nlinks)
-    #    topics = self.__parse_pages(pages)
- 
-    #    return topics
-
-    def __count_articles(self, r_args):
-        if self.__is_seq(r_args):
-            return len(r_args)
-
-        #default
-        return 1
-
-    def __format_req(self, r_args):
-        if self.__is_seq(r_args): # check if arg is a list
-            if self.__is_pageid(r_args[0]):
-                return r_pageid.format(arg_sep.join(r_args))
-            else:
-                return r_title.format(arg_sep.join(r_args))
-    
-        if self.__is_pageid(r_args):
-            return r_pageid.format(r_args)
-
-        #default return single page title format
-        return r_title.format(r_args)
-
     def request_pages_plain(self, url):
         print "\nURL --->\n", url   
         resp = requests.get(url)
@@ -217,18 +194,22 @@ class WikipediaHelper():
     
         return pages
     
-    def make_query_request(self, r_url, cont_flag, retrieve_flag, nlinks):
+    def make_query_request(self, r_url, cont_flag, retrieve_flag):
         #TODO: continue flag if neccessary
         all_pages = {}
-        index = 0;
+        
         c_flag = "continue"
-        is_continue = True
+        ct_flag = self.__format_flag(cont_flag)
+        next_flag = ""
 
-        while (nlinks > 0 and is_continue == True):
+        is_first = True
+        is_continue = False
+
+        while (is_continue == True or is_first == True):
             url = r_url
             
-            if cont_flag != None:
-                url = url + cont_flag.format(index)
+            if is_continue == True:
+                url = url + ct_flag.format(next_flag)
         
             print "\nRURL --->\n", r_url
             print "\nURL --->\n", url   
@@ -257,16 +238,20 @@ class WikipediaHelper():
             
             #should always be true
             if curr_pid > -1:
-                all_pages.update({curr_pid : pages[curr_pid]})        
+                if curr_pid in all_pages:
+                    all_pages[curr_pid][retrieve_flag].extend(pages[curr_pid][retrieve_flag])
+                else:    
+                    all_pages.update({curr_pid : pages[curr_pid]})        
 
             if c_flag in json_response:
-                index = index + 1
+                is_continue = True
+                next_flag = json_response[c_flag][cont_flag]
             else:
                 is_continue = False 
             
-            nlinks = nlinks - 1
+            is_first = False
        
-        print "\n\n\nALL_PAGES", all_pages, "\n\n" 
+        #print "\n\n\nALL_PAGES", all_pages, "\n\n" 
         return all_pages
 
     def __is_pageid(self, arg):
@@ -281,3 +266,27 @@ class WikipediaHelper():
         return (not hasattr(arg, "strip") and
                 hasattr(arg, "__getitem__") or
                 hasattr(arg, "__iter__"))
+
+    def __count_articles(self, r_args):
+        if self.__is_seq(r_args):
+            return len(r_args)
+
+        #default
+        return 1
+
+    def __format_req(self, r_args):
+        if self.__is_seq(r_args): # check if arg is a list
+            if self.__is_pageid(r_args[0]):
+                return r_pageid.format(arg_sep.join(r_args))
+            else:
+                return r_title.format(arg_sep.join(r_args))
+       
+        if self.__is_pageid(r_args):
+            return r_pageid.format(r_args)
+
+        #default return single page title format
+        return r_title.format(r_args)
+
+    def __format_flag(self, flag):
+        newflag = "&{}="
+        return newflag.format(flag) + "{}"
