@@ -12,7 +12,6 @@ from .diggly_serializers import TopicManager, TopicLinkManager, TopicLinkSeriali
 from ..models import Topic, TopicLink
 
 # 2016 wikidiggly
-# author: ola-halima
 # prototype v1
 
 rev_url= "https://en.wikipedia.org/w/api.php?&format=json&formatversion=2&action=query&prop=revisions&rvprop=content&{}"
@@ -80,11 +79,16 @@ class WikipediaHelper():
 
         print "\n\nLINKED_TITLES -->", linked_titles
         print "\nlen(LINKED_TITLES) -->", len(linked_titles)
-        return
+        source_topic.outlinks = linked_titles
+
+        #select 3 random topics
+        rand_links = self.__get_rand_topics(linked_titles, 3)
+
+        #return
 
         #create topic objects for linked topics
-        r_url = extract_url.format(r_title.format(arg_sep.join(linked_titles))) 
-        nlinks =  self.__count_articles(linked_titles)
+        r_url = extract_url.format(r_title.format(arg_sep.join(rand_links))) 
+        #nlinks =  self.__count_articles(linked_titles)
         retrieve_flag = "extract"
         linked_pages = self.make_query_request(r_url, excont, retrieve_flag)
         linked_topics = self.__parse_pages(linked_pages)
@@ -98,7 +102,7 @@ class WikipediaHelper():
                     "title" : topic.article_title,
                     "description" : reltext,
                     "wiki_link" : topic.wiki_link,
-                    "score" : self.__get_link_score(source_topic, topic)
+                    "score" : self.__get_rand_score(source_topic, topic)
                     }
 
             tlink = self.tl_creator.create_topiclink(tldata)
@@ -119,7 +123,20 @@ class WikipediaHelper():
         #return source_topic        
 
     #private functions
-    def __get_link_score(self, source, target):
+    def __get_rand_topics(self, title_list, numRes):
+        res = []
+        maxIndex = len(title_list)
+
+        while (len(res) < numRes):
+            index = random.randrange(0, maxIndex)
+            title = title_list[index]
+
+            if not title in res:
+                res.append(title)
+        
+        return res    
+
+    def __get_rand_score(self, source, target):
         #TODO: implement algorithm for topic relatedness  
         i = 0
         stop = random.randrange(20, 99)

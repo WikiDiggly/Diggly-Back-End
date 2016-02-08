@@ -14,12 +14,10 @@ from util.jsonpedia_api import JsonPediaManager
 from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework.parsers import JSONParser
 
-
 # 2015 wiki_diggly
-# author: ola-halima
 # prototype v1
 
-description_len = 15
+description_len = 5
 summary_len = 2
 
 wiki_help = WikipediaHelper(description_len, summary_len)

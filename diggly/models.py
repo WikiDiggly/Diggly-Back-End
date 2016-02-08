@@ -5,6 +5,7 @@ from django.forms.models import model_to_dict
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from flufl.enum import Enum
 
+from util.forms import StringListField
 
 #topic link enums
 class TopicLinkType(Enum):
@@ -12,9 +13,22 @@ class TopicLinkType(Enum):
     section = 2
 
 #to allow use of ListField in django admin
+#class StringListField(CharField):
+#    def prepare_value(self, value):
+#        return ', '.join(value)
+
+#    def to_python(self, value):
+#        if not value:
+#            return []
+#        return [item.strip() for item in value.split(',')]
+
+class OutlinkListField(ListField):
+    def formfield(self, **kwargs):
+        return models.Field.formfield(self, StringListField, **kwargs)
+
 class LinkedTopicsField(ListField):
     def formfield(self, **kwargs):
-        return ModelMultipleChoiceField(queryset=TopicLink.objects.all(), required=False, **kwargs)
+        return ModelMultipleChoiceField(queryset=TopicLink.objects.all(), to_field_name="target_id", required=False, **kwargs)
 
 #diggly application models
 class Topic(models.Model):
@@ -26,6 +40,7 @@ class Topic(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True) 
     linked_topics = LinkedTopicsField(EmbeddedModelField('TopicLink'), blank=True, null=True)
+    outlinks = OutlinkListField(models.CharField)
 
     def to_json(self):
         return dict(
