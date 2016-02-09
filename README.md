@@ -30,7 +30,10 @@ Django Installation Steps:
 
         $ pip install -r requirements.txt
       
-You will have to setup Django superuser in order to use the admin site in your browser (see [here](https://docs.djangoproject.com/en/1.9/intro/tutorial02/#introducing-the-django-admin))
+
+You will have to setup Django superuser in order to use the admin site in your browser (see [here](https://docs.djangoproject.com/en/1.9/intro/tutorial02/#introducing-the-django-admin)). Make sure you have mongodb installed prior to creating superuser account. mongodb uses a data directory (typically, /data/db) - you may need to add read/write/execute permissions on that.
+
+IMPORTANT: Only use Django ver. 1.5.11 and mongo v3.2.1. Other versions have broken compatibility with each other and throw 'valueexception int()' when using /topic/explore/... url
 
 Next, start Mongodb mongod instance using the following command (see [here](https://docs.mongodb.org/manual/tutorial/manage-mongodb-processes/#start-mongod-processes))
   
