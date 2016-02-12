@@ -73,7 +73,7 @@ class JsonPediaManager():
 
         retrieveflag = "title"
         titles = []
-        pages = self.wk_mgt.request_pages_plain(r_url) 
+        pages = self.wk_mgt.request_pages_plain(r_url, False) 
        
         #print "PAGES IN JSONPE -->", pages 
         for pid,page in pages.iteritems():
