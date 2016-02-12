@@ -1,0 +1,8 @@
+Diggly Tests information:
+
+- install pytest
+- Set DJANGO_SETTINGS_MODULE="wikidiggly_back.settings" environment variable
+
+
+References:
+- http://blog.wilcoxd.com/2012/07/30/testing-urls-in-django-like-rails-route-testing/
