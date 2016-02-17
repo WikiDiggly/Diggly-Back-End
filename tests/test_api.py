@@ -31,15 +31,19 @@ class TestAPIClass:
 		with mock.patch('diggly.models.Topic') as Topic_mock:
 			from diggly.views import get_topic_by_id
 			Topic.objects = mock.Mock()
-			#Topic_mock.objects = mock.Mock()
-			#Topic_mock.objects.configure_mock(**conf)
 			request_context = mock.MagicMock()
 
 			conf = {'get.side_effect': Topic.DoesNotExist}
 			Topic.objects.configure_mock(**conf)
-			
+
 			with pytest.raises(Http404):
 				get_topic_by_id(request_context, 1)
+
+			mock_instance = mock.MagicMock()
+			conf = {'get': mock_instance}
+			Topic.objects.configure_mock(**conf)
+
+			assert (get_topic_by_id(request_context, 1) == mock_instance)
 
 
 
