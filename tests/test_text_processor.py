@@ -39,7 +39,7 @@ class TestTextProcessorClass:
 		sentence_list = []
 
 		for i in range(0, num_sentences):
-			sentence_list.append(template.format(i))
+			sentence_list.append(template.format(i+1))
 
 		return sentence_list
 
