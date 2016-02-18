@@ -12,6 +12,7 @@ from django.http import Http404
 
 django_mgt = Django_Helper()
 
+#This class contains tests for the functions in diggly/views.py 
 class TestAPIClass:
 	def test_diggly_routes(self):
 		test_routes = [
@@ -31,7 +32,7 @@ class TestAPIClass:
 		tid = 123
 		Topic.objects = mock.Mock()
 		request_context = mock.MagicMock()
-
+		
 		conf_1 = {'get.side_effect': Topic.DoesNotExist}
 		Topic.objects.configure_mock(**conf_1)
 
