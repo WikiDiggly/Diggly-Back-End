@@ -2,10 +2,9 @@ import os
 import sys
 import mock
 import pytest
-
+import json
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../diggly'))
-#import diggly.views as Diggly_Views
 from diggly.models import Topic, TopicLink
 from util.django_util import Django_Helper
 from django.http import Http404
@@ -27,25 +26,25 @@ class TestAPIClass:
 		for stringOne, stringTwo in routes:
 			assert (stringOne == stringTwo)
 
-	def test_list_topic(self):
-		with mock.patch('diggly.models.Topic') as Topic_mock:
-			from diggly.views import get_topic_by_id
-			Topic.objects = mock.Mock()
-			request_context = mock.MagicMock()
+	def test_get_topic_by_id(self):
+		from diggly.views import get_topic_by_id
+		tid = 123
+		Topic.objects = mock.Mock()
+		request_context = mock.MagicMock()
 
-			conf = {'get.side_effect': Topic.DoesNotExist}
-			Topic.objects.configure_mock(**conf)
+		conf_1 = {'get.side_effect': Topic.DoesNotExist}
+		Topic.objects.configure_mock(**conf_1)
 
-			with pytest.raises(Http404):
-				get_topic_by_id(request_context, 1)
+		with pytest.raises(Http404):
+			get_topic_by_id(request_context, tid)
 
-			mock_instance = mock.MagicMock()
-			conf = {'get': mock_instance}
-			Topic.objects.configure_mock(**conf)
+		mock_instance = mock.MagicMock()
+		conf_2 = {'get': mock_instance}
+		Topic.objects.configure_mock(**conf_2)
 
-			assert (get_topic_by_id(request_context, 1) == mock_instance)
-
-
+		result = get_topic_by_id(request_context, tid)
+		result_json = json.loads(result.content)
+		assert (result_json['article_id'] != None)
 
 	#helper functions
 	def __create_mock_Topic(self):
