@@ -38,7 +38,6 @@ def explore_topic(request, tid):
         print "[LOG] Retrieving data from MongoDB"
         topic = Topic.objects.get(article_id=tid)
         
-        #TODO: Also change this to JSONPEDIA
         if len(topic.linked_topics) == 0:
             wiki_help.add_linked_topics(topic)
 
