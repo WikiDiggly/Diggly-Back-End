@@ -1,4 +1,4 @@
-Django==1.5.11
+git+https://github.com/django-nonrel/django@nonrel-1.5
 django-mongodb-engine==0.6.0
 djangorestframework==3.2.5
 djangotoolbox==1.8.0
