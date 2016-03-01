@@ -29,4 +29,5 @@
 **/include
 
 # Specific files to ignore
+*.original
 **/pip-selfcheck.json
