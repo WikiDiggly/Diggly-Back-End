@@ -27,7 +27,9 @@
 
 # Directories to ignore
 **/include
+.idea/
 
 # Specific files to ignore
 *.original
 **/pip-selfcheck.json
+
