@@ -1,4 +1,4 @@
-from ..models import Topic, TopicLink
+from ..models import Topic, TopicLink, TopicRedirect
 from rest_framework import serializers
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -35,6 +35,10 @@ class TopicManager():
     
 class TopicLinkManager():
     def create_topiclink(self, data):
+        if data['source_id'] == data['target_id']:
+            print "[LOG] Prevented creation of topiclink with source_id == target_id"
+            return None
+
         topiclink = TopicLink(source_id = data['source_id'],
                         target_id = data['target_id'],
                         title = data['title'],
@@ -48,3 +52,11 @@ class TopicLinkManager():
     #def delete_topiclink(self, obj):
 
     #def delete_mul_topiclinks(self, listtl):
+
+class TopicRedirectManager():
+    def create_topic_redirect(self, data):
+        topic_redirect = TopicRedirect(source_id = data['source_id'],
+                        redirect_topic = data['redirect_topic']) 
+
+        topic_redirect.save()
+        return topic_redirect

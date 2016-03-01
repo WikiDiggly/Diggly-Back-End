@@ -8,18 +8,18 @@ import requests
 import random
 
 from text_process import Text_Process
-from .diggly_serializers import TopicManager, TopicLinkManager, TopicLinkSerializer
-from ..models import Topic, TopicLink
+from .diggly_serializers import TopicManager, TopicLinkManager, TopicRedirectManager, TopicLinkSerializer
+from ..models import Topic, TopicLink, TopicRedirect
 
 # 2016 wikidiggly
 # prototype v1
 
 page_info_url= "https://en.wikipedia.org/w/api.php?format=json&action=query&{}"
-extract_url= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext=&{}"
+extract_url= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&redirects&explaintext=&{}"
 parse_url= "https://en.wikipedia.org/w/api.php?action=parse&prop=sections|links&contentformat=text/plain&pageid={}"
 linked_topics_url = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=links&pllimit=max&plnamespace=0&{}"
 sections_url = "https://en.wikipedia.org/w/api.php?action=parse&prop=sections"
-redirect_url = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=langlinks&redirects=&{}"
+redirect_url = "https://en.wikipedia.org/w/api.php?format=json&action=query&redirects=&{}"
 wiki_url_base= "https://en.wikipedia.org/wiki/{}"
 
 rvcont= "rvcontinue"
@@ -33,6 +33,11 @@ r_pageid= "pageids={}"
 arg_sep= "|" 
 title_sep = "_"
 
+page_resp_key = 'page_resp'
+redirect_resp_key = 'redirect_resp'
+
+DEFAULT_NUM_LINKED_TOPICS = 6
+
 class WikipediaHelper():
 
     @classmethod
@@ -43,19 +48,21 @@ class WikipediaHelper():
         self.t_processor = Text_Process(self.desc_length, self.summ_length)
         self.t_creator = TopicManager()
         self.tl_creator = TopicLinkManager()
+        self.rd_creator = TopicRedirectManager()
 
     def get_article(self, r_args):
         if self.__is_seq(r_args) == False:
             r_args = [r_args]
-            print "\n\n CONVERTING R_ARGS to list -->", r_args
 
-        redirect_ids = self.__get_page_redirect(r_args)
-        resources = self.__format_req(redirect_ids)
+        resources = self.__format_req(r_args)
         r_url = extract_url.format(resources)
 
         retrieve_flag = "extract"  
-        pages = self.make_query_request(r_url, excont, retrieve_flag)
-        topics = self.__parse_and_save_topic(pages)
+        response = self.make_query_request(r_url, excont, retrieve_flag)
+        pages = response[page_resp_key]
+        redirects = response[redirect_resp_key] if redirect_resp_key in response else None
+
+        topics = self.__parse_and_save_topic(pages, redirects)
 
         for tp in topics:
             self.add_linked_topics(tp) #retrieve linked topics
@@ -64,24 +71,20 @@ class WikipediaHelper():
 
     def add_linked_topics(self, source_topic): 
         tid = source_topic.article_id
+        num_linked_topics = DEFAULT_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
         source_page = r_pageid.format(tid)
         nlinks = 1 #number of articles
         r_url = linked_topics_url.format(source_page)
 
         #TODO: check if plcontinue flag is True
         retrieve_flag = "links"
-        pages = self.make_query_request(r_url, plcont, retrieve_flag) #TODO: add plcontinue support
+        response = self.make_query_request(r_url, plcont, retrieve_flag) #TODO: add plcontinue support
+        pages = response[page_resp_key]
         linked_titles = self. __parse_linked_pages(tid, pages)    
 
-        print "\n\nLINKED_TITLES -->", linked_titles
-        print "\nlen(LINKED_TITLES) -->", len(linked_titles)
-
         #select 3 random topics
-        rel_links = self.__fetch_relevant_topics(linked_titles, 3)
+        rel_links = self.__fetch_relevant_topics(linked_titles, num_linked_topics)
         source_topic.outlinks = linked_titles
-
-        print "\n\nNEW LINKED_TITLES -->", linked_titles
-        print "\nNEW len(LINKED_TITLES) -->", len(linked_titles)
 
         #for testing
         #return
@@ -89,8 +92,11 @@ class WikipediaHelper():
         #create topic objects for linked topics
         r_url = extract_url.format(r_title.format(arg_sep.join(rel_links)))
         retrieve_flag = "extract"
-        linked_pages = self.make_query_request(r_url, excont, retrieve_flag)
-        linked_topics = self.__parse_and_save_topic(linked_pages)
+        response = self.make_query_request(r_url, excont, retrieve_flag)
+        linked_pages = response[page_resp_key]
+        redirected_pages = response[redirect_resp_key] if redirect_resp_key in response else None
+        
+        linked_topics = self.__parse_and_save_topic(linked_pages, redirected_pages)
         topiclinks = []
 
         #create topiclink relation for linked_topics
@@ -105,39 +111,25 @@ class WikipediaHelper():
                     }
 
             tlink = self.tl_creator.create_topiclink(tldata)
-            topiclinks.append(tlink)
+            
+            #prevent creation of topiclink where source_id == target_id
+            if tlink != None:
+                topiclinks.append(tlink)
+            else:
+                linked_topics.remove(topic)
 
         sorted_tl = sorted(topiclinks, key=lambda instance: instance.score, reverse=True)
-        num_links = 2
         
-        #to prevent Index out of bounds error on sorted_tl
-        i = 0
-        for tl in sorted_tl:
-            if (i <= num_links):
-                source_topic.linked_topics.append(tl)        
-                i = i + 1
-
+        #added like this to prevent Index out of bounds error on sorted_tl
+        num_linked_topics = DEFAULT_NUM_LINKED_TOPICS
+        if len(sorted_tl) < num_linked_topics:
+            source_topic.linked_topics.extend(sorted_tl)
+        else:
+            source_topic.linked_topics.extend(sorted_tl[0:num_linked_topics+1])
+    
         source_topic.save()
 
     #private functions
-    def __fetch_relevant_topics(self, title_list, numRes):
-        res = []
-        maxIndex = len(title_list)
-
-        while (len(res) < numRes):
-            index = random.randrange(0, maxIndex)
-            title = title_list[index]
-
-            if not title in res:
-                res.append(title)
-                title_list.remove(title)
-        
-        redirect_ids = self.__get_page_redirect(res)
-        redirect_titles = self.__convert_ids_to_titles(redirect_ids)
-
-        title_list.extend(redirect_titles)
-        return redirect_titles    
-
     def __get_rand_score(self, source, target):
         #TODO: implement algorithm for topic relatedness  
         i = 0
@@ -147,11 +139,25 @@ class WikipediaHelper():
         
         return i #randomly generated score 
 
+    def __fetch_relevant_topics(self, title_list, numRes):
+        res = []
+
+        while (len(res) < numRes):
+            maxIndex = len(title_list)
+            index = random.randrange(0, maxIndex)
+            title = title_list[index]
+
+            if not title in res:
+                res.append(title)
+                title_list.remove(title)
+        
+        title_list.extend(res)
+        return res    
+
     def __parse_linked_pages(self, source_id, pages):
         if pages != None:
             pattern = re.compile(r'\d\$,')
             titles = []
-            #print "\n\n\nPAGES (links)", pages, "\n\n"
             links = pages[str(source_id)]["links"]
 
             if links != None:
@@ -164,7 +170,7 @@ class WikipediaHelper():
 
             return titles
     
-    def __parse_and_save_topic(self, pages):
+    def __parse_and_save_topic(self, pages, redirects):
         topics = []
 
         for pid in pages:
@@ -177,8 +183,7 @@ class WikipediaHelper():
             except Topic.DoesNotExist:
                 pcontent = pages[pid]
                 title = pcontent['title']
-                #print "\n\nPCONTENT ---> ", pcontent, "\n\n"
-            
+
                 content = pcontent['extract'].encode('utf-8') #TODO: fix this to make bug proof
                 parsedtext = self.t_processor.get_desc_summ(content)
 
@@ -191,6 +196,19 @@ class WikipediaHelper():
                         }
 
                 topic = self.t_creator.create_topic(data)     
+
+                #continue if there are no page redirects
+                if redirects != None or bool(redirects) != False:
+                    #print "\n\nREDIRECTS -->", redirects
+                    for rd in redirects:
+                        rdfrom = rd['from']
+                        rdto = rd['to']
+
+                        if title == rdto:
+                            topic_rd = self.__create_topic_redirect(rdfrom, topic)
+                            topic_rd.save()
+                            redirects.remove(rd)
+
                 topic.save() 
          
             if topic != None:   
@@ -198,34 +216,15 @@ class WikipediaHelper():
         
         return topics
 
-    def __get_page_redirect(self, r_args):
-        resources = self.__format_req(r_args)
-        url = redirect_url.format(resources)
-        resp = requests.get(url)
+    def __create_topic_redirect(self, source_rd_title, target_rd_topic):
+        source_rd_id = self.__convert_titles_to_ids([source_rd_title])[0]
 
-        if resp.status_code != 200:
-            raise ApiError('GET: api request error\n{}'.format(resp.status_code))
-            return None
-
-        json_response = resp.json()
-        query = json_response['query']
-
-        if 'redirects' not in query:
-            return r_args
-
-        redirects = query['redirects']
-        pages = json_response['query']['pages']
-        redirect_ids = pages.keys()
-
-        print "\n\nREDIRECTS -->", redirects
-        print "\nR_ARGS -->", r_args
-        print "\nREDIRECT IDS -->", redirect_ids
-
-        return redirect_ids
-
+        data = {"source_id" : source_rd_id, "redirect_topic" : target_rd_topic}
+        topic_rd = self.rd_creator.create_topic_redirect(data)
+        return topic_rd
 
     def request_pages_plain(self, url):
-        print "\nURL --->\n", url   
+        print "\nREQUEST URL --->\n", url   
         resp = requests.get(url)
       
         if resp.status_code != 200:
@@ -248,6 +247,7 @@ class WikipediaHelper():
 
         is_first = True
         is_continue = False
+        redirects = None
 
         while (is_continue == True or is_first == True):
             url = r_url
@@ -255,8 +255,7 @@ class WikipediaHelper():
             if is_continue == True:
                 url = url + ct_flag.format(next_flag)
         
-            print "\nRURL --->\n", r_url
-            print "\nURL --->\n", url   
+            print "\nREQUEST URL --->\n", url   
             resp = requests.get(url)
             if resp.status_code != 200:
                 #TODO: handle exception better
@@ -265,7 +264,11 @@ class WikipediaHelper():
 
             #TODO: catch Exception for "No JSON object could be decoded"
             json_response = resp.json()
-            pages = json_response['query']['pages']
+            query = json_response['query']
+            pages = query['pages']
+            
+            if 'redirects' in query:
+                redirects = query['redirects']
  
             curr_pid = -1
             for key,val in pages.iteritems():
@@ -291,8 +294,29 @@ class WikipediaHelper():
                 is_continue = False 
             
             is_first = False
-       
-        return all_pages
+        
+        results = {page_resp_key : all_pages}
+    
+        if redirects != None:
+            results.update({redirect_resp_key : redirects})
+
+        return results
+
+    def __convert_titles_to_ids(self, titles):
+        resources = self.__format_req(titles)
+        url = page_info_url.format(resources)
+        pages = self.request_pages_plain(url)
+
+        if pages == None:
+            #TODO: error handling
+            return []
+
+        ids = []
+        for pgval in pages.values():
+            tid = pgval['pageid']
+            ids.append(tid)
+
+        return ids
 
     def __convert_ids_to_titles(self, ids):
         resources = self.__format_req(ids)
