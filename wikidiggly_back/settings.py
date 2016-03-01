@@ -122,4 +122,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CORS_ORIGIN_WHITELIST = ('diggly.firebaseio.com')
+CORS_ORIGIN_WHITELIST = ('diggly.firebaseapp.com')
