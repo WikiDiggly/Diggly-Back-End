@@ -26,9 +26,8 @@
 /lib/*
 
 # Directories to ignore
-/include
+**/include
 
 # Specific files to ignore
-/pip-selfcheck.json
-
 *.original
+**/pip-selfcheck.json

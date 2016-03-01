@@ -6,7 +6,7 @@ from django.forms.models import model_to_dict
 from django.utils import simplejson
 from itertools import chain
 
-from models import Topic, TopicLink
+from models import Topic, TopicLink, TopicRedirect
 from util.diggly_serializers import TopicSerializer, TopicLinkSerializer
 from util.wikipedia_api import WikipediaHelper
 from util.jsonpedia_api import JsonPediaManager
@@ -36,9 +36,11 @@ def explore_topic(request, tid):
 
     try:
         print "[LOG] Retrieving data from MongoDB"
-        topic = Topic.objects.get(article_id=tid)
+        topic = get_redirect_id(tid)
         
-        #TODO: Also change this to JSONPEDIA
+        if topic == None:
+            topic = Topic.objects.get(article_id=tid)
+        
         if len(topic.linked_topics) == 0:
             wiki_help.add_linked_topics(topic)
 
@@ -46,7 +48,6 @@ def explore_topic(request, tid):
         
     except Topic.DoesNotExist:
         print "[LOG] attempting to fetch data from wikipedia"
-        #topics = wiki_help.get_article(tid)
         topics = wiki_help.get_article(tid)
         topic = topics[0] 
         data = json.dumps(topic.to_json())
@@ -57,7 +58,11 @@ def get_topic_by_id(request, tid):
     print "LOG: get_topic_title; tid ->", tid
     
     try:
-        topic = Topic.objects.get(article_id=tid)
+        topic = get_redirect_id(tid)
+        
+        if topic == None:
+            topic = Topic.objects.get(article_id=tid)
+
         serializer = TopicSerializer(topic)
         print "[LOG] retrieving topic request from MongoDB"   
  
@@ -116,17 +121,13 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
-#helper method
-#do not use in production
-#def get_section_links(request, tid):
-#    print "LOG: get_section_links; tid ->", tid
+#helper functions
+def get_redirect_id(tid):
+    print "LOG: get_redirect_id; tid ->", tid
 
-#    try:
-#        topic = Topic.objects.get(article_id=tid) 
-#        sectionlinks = topic.sectionlink_source.all()
-#        serializer = SectionLinkSerializer(sectionlinks, many=True)
-    
-#    except Topic.DoesNotExist:
-#        raise Http404("Topic does not exist")
+    try:
+        tl_redirect = TopicRedirect.objects.get(source_id=tid)
+        return tl_redirect.redirect_topic
 
-#    return JSONResponse(serializer.data)            
+    except TopicRedirect.DoesNotExist:
+        return None

@@ -10,17 +10,7 @@ from util.forms import StringListField
 #topic link enums
 class TopicLinkType(Enum):
     article = 1
-    section = 2
-
-#to allow use of ListField in django admin
-#class StringListField(CharField):
-#    def prepare_value(self, value):
-#        return ', '.join(value)
-
-#    def to_python(self, value):
-#        if not value:
-#            return []
-#        return [item.strip() for item in value.split(',')]
+    section = 2 #TODO: implement section vs. article tagging in Topic objects
 
 class OutlinkListField(ListField):
     def formfield(self, **kwargs):
@@ -84,4 +74,8 @@ class TopicLink(models.Model):
              target=self.target.article_id,
              description=self.description,
              score=self.score)
+
+class TopicRedirect(models.Model):
+    source_id = models.BigIntegerField(primary_key=True, null=False)
+    redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
 
