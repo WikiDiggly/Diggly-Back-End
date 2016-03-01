@@ -23,15 +23,40 @@ class TopicManager():
         topic.save()
         return topic
 
-    #def update_topic(self, data):
+    def update_topic(self, data):
+    #detect which topic is being updated (article_id?)
+    #detect what fields are bieng updated (ignore empty/null fields)... take non-null/non-empty fields and update those only, leaving others untouched.
+        topic = Topic.objects.get(article_id=data['article_id']) #get the topic being edited/updated by id
 
-    #def delete_topic(self, tid):
-        #tl = TopicLinkManager()
-        #tl.delete_mul_topiclink(listObjs)
-        #topic = Topic.objects.get(article_id=tid) 
-        #Topic.objects.remove(topic)
+        if (data['article_title'] and data['article_title'] != ""):
+            topic.article_title = data['article_title']
 
-        #return topic
+        if (data['description'] and data['description'] != ""):
+            topic.description = data['description']
+
+        if (data['summary'] and data['summary'] != ""):
+            topic.summary = data['summary']
+
+        if (data['wiki_link'] and data['wiki_link'] != ""):
+            topic.wiki_link = data['wiki_link']
+
+        if (data['linked_topics'] and data['linked_topics']):
+            topic.linked_topics = data['linked_topics']
+
+        topic.save()
+        return topic
+
+
+    #delete topic and all associated linked topics
+    def delete_topic(self, tid):
+        topic = Topic.objects.get(article_id=tid)
+        topiclinks = topic.topiclink_source.all()
+
+        tlm = TopicLinkManager()
+        tlm.delete_mul_topiclink(topiclinks)
+        Topic.objects.remove(topic)
+
+        return True
     
 class TopicLinkManager():
     def create_topiclink(self, data):
@@ -45,6 +70,14 @@ class TopicLinkManager():
         topiclink.save()
         return topiclink
 
-    #def delete_topiclink(self, obj):
+    def delete_topiclink(self, tid):
+        topiclink = TopicLink.objects.get(source_id=tid)
+        TopicLink.objects.remove(TopicLink)
 
-    #def delete_mul_topiclinks(self, listtl):
+        return True
+
+    def delete_mul_topiclinks(self, listtl):
+        for topiclink in listtl:
+            delete_topiclink(topiclink.article_id)
+
+        return True
