@@ -30,3 +30,5 @@
 
 # Specific files to ignore
 /pip-selfcheck.json
+
+*.original
