@@ -1,14 +1,10 @@
-import os
 import sys
-import mock
-import pytest
-import json
+
+import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../diggly/util'))
-from diggly.util.text_process import Text_Process
+from diggly.util.text_processor.text_process import Text_Process
 from util.django_util import Django_Helper
-from django.http import Http404
-
 
 django_mgt = Django_Helper()
 
