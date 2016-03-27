@@ -1,11 +1,11 @@
+import random
 import sys
+
 import re
 import requests
-import random
-
 from diggly.models import Topic
+from diggly.util.serializers.topic_serializers import TopicManager, TopicLinkManager, TopicRedirectManager
 from diggly.util.text_process import Text_Process
-from diggly.util.diggly_serializers import TopicManager, TopicLinkManager, TopicRedirectManager
 from diggly.util.wikipediaAPI.wiki_constants import *
 
 reload(sys);

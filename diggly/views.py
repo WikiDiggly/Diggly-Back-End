@@ -1,13 +1,12 @@
 import json
 
+from diggly.util.serializers.topic_serializers import TopicSerializer, TopicLinkSerializer
+from diggly.util.wikipediaAPI.wiki_api import WikipediaHelper
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.http import HttpResponse
 from models import Topic, TopicRedirect
 from rest_framework.renderers import JSONRenderer
-from diggly.util.diggly_serializers import TopicSerializer, TopicLinkSerializer
-from diggly.util.wikipediaAPI.wiki_api import WikipediaHelper
-from diggly.util.jsonpedia_api import JsonPediaManager
 
 # 2015 wiki_diggly
 # prototype v1

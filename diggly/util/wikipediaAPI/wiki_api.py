@@ -1,8 +1,8 @@
 import random
 import threading
 
+from diggly.util.serializers.topic_serializers import TopicLinkManager
 from diggly.util.wikipediaAPI.wiki_api_utils import WikiAPIUtils
-from diggly.util.diggly_serializers import TopicLinkManager
 from diggly.util.wikipediaAPI.wiki_constants import *
 
 # 2016 wikidiggly

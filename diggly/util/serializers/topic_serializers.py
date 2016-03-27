@@ -1,32 +1,35 @@
-from ..models import Topic, TopicLink, TopicRedirect
+from diggly.models import Topic, TopicLink, TopicRedirect
 from rest_framework import serializers
+
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = ('article_title', 'article_id', 'summary', 'description', 'wiki_link')
 
+
 class TopicLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicLink
         fields = ('source_id', 'target_id', 'description', 'score')
 
+
 class TopicManager():
     def create_topic(self, data):
-        topic = Topic(article_title = data['article_title'],
-                        article_id = data['article_id'],
-                        description = data['description'],
-                        summary = data['summary'],
-                        wiki_link = data['wiki_link'],
-                        linked_topics = data['linked_topics']) 
+        topic = Topic(article_title=data['article_title'],
+                      article_id=data['article_id'],
+                      description=data['description'],
+                      summary=data['summary'],
+                      wiki_link=data['wiki_link'],
+                      linked_topics=data['linked_topics'])
 
         topic.save()
         return topic
 
     def update_topic(self, data):
-    #detect which topic is being updated (article_id?)
-    #detect what fields are bieng updated (ignore empty/null fields)... take non-null/non-empty fields and update those only, leaving others untouched.
-        topic = Topic.objects.get(article_id=data['article_id']) #get the topic being edited/updated by id
+        # detect which topic is being updated (article_id?)
+        # detect what fields are bieng updated (ignore empty/null fields)... take non-null/non-empty fields and update those only, leaving others untouched.
+        topic = Topic.objects.get(article_id=data['article_id'])  # get the topic being edited/updated by id
 
         if (data['article_title'] and data['article_title'] != ""):
             topic.article_title = data['article_title']
@@ -46,8 +49,7 @@ class TopicManager():
         topic.save()
         return topic
 
-
-    #delete topic and all associated linked topics
+    # delete topic and all associated linked topics
     def delete_topic(self, tid):
         topic = Topic.objects.get(article_id=tid)
         topiclinks = topic.topiclink_source.all()
@@ -57,19 +59,20 @@ class TopicManager():
         Topic.objects.remove(topic)
 
         return True
-    
+
+
 class TopicLinkManager():
     def create_topiclink(self, data):
         if data['source_id'] == data['target_id']:
             print "[LOG] Prevented creation of topiclink with source_id == target_id"
             return None
 
-        topiclink = TopicLink(source_id = data['source_id'],
-                        target_id = data['target_id'],
-                        title = data['title'],
-                        description = data['description'],
-                        wiki_link = data['wiki_link'],
-                        score = data['score']) 
+        topiclink = TopicLink(source_id=data['source_id'],
+                              target_id=data['target_id'],
+                              title=data['title'],
+                              description=data['description'],
+                              wiki_link=data['wiki_link'],
+                              score=data['score'])
 
         topiclink.save()
         return topiclink
@@ -86,12 +89,13 @@ class TopicLinkManager():
 
         return True
 
-    #def delete_mul_topiclinks(self, listtl):
+        # def delete_mul_topiclinks(self, listtl):
+
 
 class TopicRedirectManager():
     def create_topic_redirect(self, data):
-        topic_redirect = TopicRedirect(source_id = data['source_id'],
-                        redirect_topic = data['redirect_topic']) 
+        topic_redirect = TopicRedirect(source_id=data['source_id'],
+                                       redirect_topic=data['redirect_topic'])
 
         topic_redirect.save()
         return topic_redirect
