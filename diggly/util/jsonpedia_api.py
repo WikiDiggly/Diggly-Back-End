@@ -1,11 +1,8 @@
 import os
 import requests
-import random
-
-from text_process import Text_Process
-from .diggly_serializers import TopicManager, TopicLinkManager, TopicLinkSerializer
-from .wikipedia_api import WikipediaHelper
-from ..models import Topic, TopicLink
+from diggly.util.serializers.topic_serializers import TopicManager, TopicLinkManager
+from diggly.util.text_processor.text_process import Text_Process
+from diggly.util.wikipediaAPI.wiki_api import WikipediaHelper
 
 pageid_convert_url="https://en.wikipedia.org/w/api.php?action=query&format=json&{}"
 jpedia_base_url="https://michelemostarda-JSONpedia-v1.p.mashape.com/annotate/resource/json/{}?&procs=extractors"
