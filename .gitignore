@@ -33,3 +33,5 @@
 *.original
 **/pip-selfcheck.json
 
+
+runserver.sh

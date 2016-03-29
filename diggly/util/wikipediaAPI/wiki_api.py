@@ -112,15 +112,17 @@ class WikipediaHelper():
             linked_topic = self.api_utils.parse_and_save_topic(linked_page, redirected_page)[0] # get the first element returned
 
             # create topiclink relation for linked_topic
-            reltext = linked_topic.article_title + " is linked to " + source_topic.article_title
-
-            tldata = {"source_id": source_topic,
-                      "target_id": linked_topic,
-                      "title": linked_topic.article_title,
-                      "description": reltext,
-                      "wiki_link": linked_topic.wiki_link,
-                      "score": self.api_utils.get_rand_score(source_topic, linked_topic)
-                      }
+            reltext = topic.article_title + " is linked to " + source_topic.article_title 
+            rand_score = self.__get_rand_score(source_topic, topic);
+            tldata = {"source_id" : source_topic,
+                    "target_id" : topic,
+                    "title" : topic.article_title,
+                    "description" : reltext,
+                    "wiki_link" : topic.wiki_link,
+                    "base_score" : rand_score,
+                    "user_score" : 0.0,
+                    "score": rand_score
+                    }
 
             tlink = self.tl_creator.create_topiclink(tldata)
 
