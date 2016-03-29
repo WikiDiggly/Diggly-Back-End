@@ -20,6 +20,10 @@ urlpatterns = [
     #ex: /diggly/topics/explore/791/ 
     url(r'^topics/explore/(?P<tid>[0-9]+)/$', views.explore_topic, name='explore_topic'),
 
+    #ex: /diggly/track/1234/<user/session-based token from cookie>
+    url(r'^track/(?P<tid>[0-9]+)/(?P<sessionid>[0-9a-zA-Z]+)/$', views.track_topic, name='track_topic'),
+
+
     #ex: /diggly/topics/sections/related/791/ 
     #url(r'^topics/sections/(?P<tid>[0-9]+)/$', views.get_section_links, name='get_section_links'),
     

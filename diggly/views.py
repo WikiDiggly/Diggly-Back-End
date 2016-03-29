@@ -100,6 +100,16 @@ def get_top_topiclinks(request, tid):
     
     return JSONResponse(serializer.data)
 
+def track_topic(request, tid, sessionid):
+    print request, "\n", tid, "\n", sessionid
+    #topic = new Topic(tid)
+
+
+    return HttpResponse('')
+    
+
+
+
 def convertTopicLink(topiclinks):
     res = []
 
@@ -110,6 +120,7 @@ def convertTopicLink(topiclinks):
 
     res_sorted = sorted(res, key=lambda instance: instance.score, reverse=True)
     return res_sorted
+
 
 #An HttpResponse that renders its content into JSON
 class JSONResponse(HttpResponse):

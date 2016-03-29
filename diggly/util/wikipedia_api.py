@@ -101,13 +101,16 @@ class WikipediaHelper():
 
         #create topiclink relation for linked_topics
         for topic in linked_topics:
-            reltext = topic.article_title + " is linked to " + source_topic.article_title
+            reltext = topic.article_title + " is linked to " + source_topic.article_title 
+            rand_score = self.__get_rand_score(source_topic, topic);
             tldata = {"source_id" : source_topic,
                     "target_id" : topic,
                     "title" : topic.article_title,
                     "description" : reltext,
                     "wiki_link" : topic.wiki_link,
-                    "score" : self.__get_rand_score(source_topic, topic)
+                    "base_score" : rand_score,
+                    "user_score" : 0.0,
+                    "score": rand_score
                     }
 
             tlink = self.tl_creator.create_topiclink(tldata)

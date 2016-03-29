@@ -66,6 +66,8 @@ class TopicLink(models.Model):
     title = models.CharField(max_length = 256)
     description = models.TextField()
     wiki_link = models.URLField()
+    base_score = models.FloatField()
+    user_score = models.FloatField()
     score = models.FloatField()
 
     def to_json(self):
@@ -73,9 +75,20 @@ class TopicLink(models.Model):
              source=self.source.article_id,
              target=self.target.article_id,
              description=self.description,
+             base_score=self.base_score,
+             user_score=self.user_score,
              score=self.score)
 
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
+
+class TopicSessionTracker(models.Model):
+  session_id = models.CharField(null=False, max_length=256) # session ID of user (to prevent duplicate voting in a time period (session))
+  topic_link = models.ForeignKey('TopicLink', related_name='topic_session_tl') #association we're keeping a track of
+  clicks = models.IntegerField()
+  created = models.DateTimeField(auto_now_add=True)
+
+ 
+
 

@@ -9,7 +9,7 @@ class TopicSerializer(serializers.ModelSerializer):
 class TopicLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicLink
-        fields = ('source_id', 'target_id', 'description', 'score')
+        fields = ('source_id', 'target_id', 'description', 'base_score', 'user_score', 'score')
 
 class TopicManager():
     def create_topic(self, data):
@@ -69,7 +69,9 @@ class TopicLinkManager():
                         title = data['title'],
                         description = data['description'],
                         wiki_link = data['wiki_link'],
-                        score = data['score']) 
+                        base_score = data['base_score'],
+                        user_score = data['user_score'],
+                        score = data['score'])  
 
         topiclink.save()
         return topiclink
