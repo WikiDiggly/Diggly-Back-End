@@ -1,27 +1,18 @@
 import json
-from django.core import serializers
-from django.http import Http404
-from django.http import HttpResponse  
+
+from diggly.util.serializers.topic_serializers import TopicSerializer, TopicLinkSerializer
+from diggly.util.wikipediaAPI.wiki_api import WikipediaHelper
 from django.forms.models import model_to_dict
-from django.utils import simplejson
-from itertools import chain
-
-from models import Topic, TopicLink, TopicRedirect
-from util.diggly_serializers import TopicSerializer, TopicLinkSerializer
-from util.wikipedia_api import WikipediaHelper
-from util.jsonpedia_api import JsonPediaManager
-
-from rest_framework.renderers import BaseRenderer, JSONRenderer
-from rest_framework.parsers import JSONParser
+from django.http import Http404
+from django.http import HttpResponse
+from models import Topic, TopicRedirect
+from rest_framework.renderers import JSONRenderer
 
 # 2015 wiki_diggly
 # prototype v1
 
-description_len = 5
-summary_len = 2
-
-wiki_help = WikipediaHelper(description_len, summary_len)
-jpedia_mgt = JsonPediaManager(description_len, summary_len)
+wiki_help = WikipediaHelper()
+#jpedia_mgt = JsonPediaManager(description_len, summary_len)
 
 def index(request):
     return HttpResponse("Hello! Welcome to the Diggly index.")

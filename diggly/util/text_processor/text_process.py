@@ -5,8 +5,6 @@ sys.setdefaultencoding("utf8")
 
 
 # 2016 wiki_diggly
-# author: ola-halima
-# prototype v1
 # This class is a diggly wrapper for the nltk text processing library functionalities
 
 class Text_Process():
@@ -26,7 +24,7 @@ class Text_Process():
         summ = self.__get_sentences(content, self.summ_length)
         return summ
 
-    #preferred to use this function
+    # preferred to use this function
     def get_desc_summ(self, content):
         desc = self.get_description(content)
         summ = self.get_summary(desc)
@@ -34,9 +32,8 @@ class Text_Process():
         res = {self.desc_text : desc, self.summ_text : summ}
         return res   
 
-    #private functions
+    # private functions
     def __get_sentences(self, content, length):
-        #print "CONTENT in TEXT_PROCESS -->", content
         sentences = nltk.sent_tokenize(content.decode('utf-8'))
         res = " ".join(sentences[0:length]) 
         return res

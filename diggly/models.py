@@ -1,3 +1,4 @@
+from diggly.util.serializers.forms import StringListField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import ModelMultipleChoiceField
@@ -5,7 +6,6 @@ from django.forms.models import model_to_dict
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from flufl.enum import Enum
 
-from util.forms import StringListField
 
 #topic link enums
 class TopicLinkType(Enum):
