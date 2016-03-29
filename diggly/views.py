@@ -91,10 +91,10 @@ def get_top_topiclinks(request, tid):
     
     return JSONResponse(serializer.data)
 
-def track_topic(request, tid, sessionid):
+#user feedback is received
+def track_topic(request, tid_src, tid_dst, sessionid):
     print request, "\n", tid, "\n", sessionid
     #topic = new Topic(tid)
-
 
     return HttpResponse('')
     
