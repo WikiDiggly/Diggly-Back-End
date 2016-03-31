@@ -1,11 +1,11 @@
 import json
-
+from diggly.util.scoring.topic_score_update import update_score
 from diggly.util.serializers.topic_serializers import TopicSerializer, TopicLinkSerializer
 from diggly.util.wikipediaAPI.wiki_api import WikipediaHelper
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.http import HttpResponse
-from models import Topic, TopicRedirect
+from models import Topic, TopicLink, TopicRedirect
 from rest_framework.renderers import JSONRenderer
 
 # 2015 wiki_diggly
@@ -32,6 +32,9 @@ def explore_topic(request, tid):
         if topic == None:
             topic = Topic.objects.get(article_id=tid)
         
+        topiclinks = TopicLink.objects.filter(source_id=topic.article_id)
+
+        topic.linked_topics = topiclinks[0:7]
         if len(topic.linked_topics) == 0:
             wiki_help.add_linked_topics(topic)
 
@@ -91,6 +94,16 @@ def get_top_topiclinks(request, tid):
     
     return JSONResponse(serializer.data)
 
+#user feedback is received
+def track_topic(request, tid_src, tid_dst):
+    print request, "\n", tid_src, "\n", tid_dst, "\n"
+    update_score(tid_src, tid_dst)
+
+    return HttpResponse('Done with request')
+    
+
+
+
 def convertTopicLink(topiclinks):
     res = []
 
@@ -101,6 +114,7 @@ def convertTopicLink(topiclinks):
 
     res_sorted = sorted(res, key=lambda instance: instance.score, reverse=True)
     return res_sorted
+
 
 #An HttpResponse that renders its content into JSON
 class JSONResponse(HttpResponse):

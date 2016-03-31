@@ -11,7 +11,7 @@ class TopicSerializer(serializers.ModelSerializer):
 class TopicLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicLink
-        fields = ('source_id', 'target_id', 'description', 'score')
+        fields = ('source_id', 'target_id', 'description', 'base_score', 'user_score', 'score')
 
 
 class TopicManager():
@@ -67,12 +67,14 @@ class TopicLinkManager():
             print "[LOG] Prevented creation of topiclink with source_id == target_id"
             return None
 
-        topiclink = TopicLink(source_id=data['source_id'],
-                              target_id=data['target_id'],
-                              title=data['title'],
-                              description=data['description'],
-                              wiki_link=data['wiki_link'],
-                              score=data['score'])
+        topiclink = TopicLink(source_id = data['source_id'],
+                        target_id = data['target_id'],
+                        title = data['title'],
+                        description = data['description'],
+                        wiki_link = data['wiki_link'],
+                        base_score = data['base_score'],
+                        user_score = data['user_score'],
+                        score = data['score'])  
 
         topiclink.save()
         return topiclink

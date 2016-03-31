@@ -66,6 +66,8 @@ class TopicLink(models.Model):
     title = models.CharField(max_length = 256)
     description = models.TextField()
     wiki_link = models.URLField()
+    base_score = models.FloatField()
+    user_score = models.FloatField()
     score = models.FloatField()
 
     def to_json(self):
@@ -73,9 +75,13 @@ class TopicLink(models.Model):
              source=self.source.article_id,
              target=self.target.article_id,
              description=self.description,
+             base_score=self.base_score,
+             user_score=self.user_score,
              score=self.score)
 
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
+ 
+
 

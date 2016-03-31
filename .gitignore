@@ -10,6 +10,7 @@
 *.pyc
 *.Python
 *.txt.sb*
+*.sh
 *~*
 *.sass-cache
 
@@ -32,4 +33,4 @@
 # Specific files to ignore
 *.original
 **/pip-selfcheck.json
-
+**/runserver.sh
