@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 urlpatterns = [
@@ -21,7 +22,7 @@ urlpatterns = [
     url(r'^topics/explore/(?P<tid>[0-9]+)/$', views.explore_topic, name='explore_topic'),
 
     #ex: /diggly/track/1234/<user/session-based token from cookie>
-    url(r'^track/(?P<tid_src>[0-9]+)/(?P<tid_dst>[0-9]+)/$', views.track_topic, name='track_topic'),
+    url(r'^topics/track/$', csrf_exempt(views.track_topic), name='track_topic'),
 
 
     #ex: /diggly/topics/sections/related/791/ 
