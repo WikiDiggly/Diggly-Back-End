@@ -82,13 +82,6 @@ class TopicLink(models.Model):
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
-
-class TopicSessionTracker(models.Model):
-  session_id = models.CharField(null=False, max_length=256) # session ID of user (to prevent duplicate voting in a time period (session))
-  topic_link = models.ForeignKey('TopicLink', related_name='topic_session_tl') #association we're keeping a track of
-  clicks = models.IntegerField()
-  created = models.DateTimeField(auto_now_add=True)
-
  
 
 
