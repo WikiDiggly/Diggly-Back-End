@@ -18,6 +18,8 @@ config = {
         'nltk==3.1',
         'pymongo==2.8',
         'requests==2.9.1',
+        'scipy=0.17.0',
+        'scikit-learn=0.17.1',
         'wheel==0.24.0',
         'pytest==2.8.7'
     ],

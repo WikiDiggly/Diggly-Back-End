@@ -1,15 +1,16 @@
 import random
 import threading
 
+from diggly.util.text_processor.score_process import score_topics
 from diggly.util.serializers.topic_serializers import TopicLinkManager
 from diggly.util.wikipediaAPI.wiki_api_utils import WikiAPIUtils
 from diggly.util.wikipediaAPI.wiki_constants import *
 
 # 2016 wikidiggly
 
-
 thread_lock1 = threading.Lock()
 thread_lock2 = threading.Lock()
+thread_lock3 = threading.Lock()
 
 
 class WikipediaHelper():
@@ -43,6 +44,7 @@ class WikipediaHelper():
     def add_linked_topics(self, source_topic):
         tid = source_topic.article_id
         num_linked_topics = DEFAULT_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
+        max_linked_topics = MAX_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
         source_page = R_PAGEID.format(tid)
         r_url = LINKED_TOPICS_URL.format(source_page)
 
@@ -52,8 +54,10 @@ class WikipediaHelper():
         linked_titles = self.api_utils.parse_linked_pages(tid, pages)
 
         # select 6 random topics
-        rel_links = self.fetch_relevant_topics(linked_titles, num_linked_topics)
+        #rel_links = self.fetch_relevant_topics(linked_titles, num_linked_topics)
+        rel_links = self.fetch_relevant_topics(linked_titles, max_linked_topics)
         source_topic.outlinks = linked_titles
+        all_linked_topics = []
 
         # for testing
         # return
@@ -61,13 +65,17 @@ class WikipediaHelper():
         try:
             thread_count = 1
             topic_links = []
+            topic_desc_dict = {}
             threads = []
 
+            topic_desc_dict.update({source_topic.article_id: source_topic.description})
+
             for i in range (1, MAX_NUM_THREADS+1):
-                tmp_thread = FuncThread(thread_count, self.spun_topic_creator, source_topic, rel_links, topic_links)
+                tmp_thread = FuncThread(thread_count, self.spun_topic_creator,
+                                        source_topic, rel_links, topic_links, topic_desc_dict)
                 tmp_thread.start()
                 threads.append(tmp_thread)
-                #print "Spun Thread #", thread_count, "\n"
+                print "Spun Thread #", thread_count, "\n"
                 thread_count += 1
 
             # wait for threads to return
@@ -75,22 +83,32 @@ class WikipediaHelper():
                 t.join()
 
             #print "Exiting Main Thread.."
+
+            # calculate score of related topics
+            print "About to start calculating scores\n"
+            scored_desc_dict = score_topics(source_topic.article_id, topic_desc_dict)
+
+            print "\nNEW SCORES FOR TOPICS:\n"
+            for a,b in scored_desc_dict.iteritems():
+                print a, "-->", b, "\n"
+
             sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
 
             # added like this to prevent Index out of bounds error on sorted_tl
             num_linked_topics = DEFAULT_NUM_LINKED_TOPICS
             if len(sorted_tl) < num_linked_topics:
-                source_topic.linked_topics.extend(sorted_tl)
+                all_linked_topics.extend(sorted_tl)
             else:
-                source_topic.linked_topics.extend(sorted_tl[0:num_linked_topics + 1])
+                all_linked_topics.extend(sorted_tl[0:num_linked_topics + 1])
 
+            source_topic.linked_topics = all_linked_topics[0:6]
             source_topic.save()
 
         except Exception, E:
             print "Error: issue with threads"
             print str(E)
 
-    def spun_topic_creator(self, source_topic, rel_topics, topic_links):
+    def spun_topic_creator(self, source_topic, rel_topics, topic_links, topic_desc_dict):
         topic_name = None
         exit_thread = False
 
@@ -126,10 +144,17 @@ class WikipediaHelper():
 
             tlink = self.tl_creator.create_topiclink(tldata)
 
+            # add to topic_link to list of related topics
             thread_lock2.acquire()
             if tlink is not None: # prevent creation of topiclink where source_id == target_id
                 topic_links.append(tlink)
             thread_lock2.release()
+
+            # add to topic_name -> description to dictionary
+            thread_lock3.acquire()
+            if linked_topic.article_id not in topic_desc_dict:
+                topic_desc_dict.update({linked_topic.article_id: linked_topic.description})
+            thread_lock3.release()
 
             thread_lock1.acquire()
             if len(rel_topics) == 0:

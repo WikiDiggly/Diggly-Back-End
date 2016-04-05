@@ -19,7 +19,7 @@ class WikiAPIUtils():
         self.desc_length = desc_len
         self.summ_length = summ_len
 
-        self.t_processor = Text_Process(self.desc_length, self.summ_length)
+        self.t_processor = Text_Process()
         self.t_creator = TopicManager()
         self.tl_creator = TopicLinkManager()
         self.rd_creator = TopicRedirectManager()
