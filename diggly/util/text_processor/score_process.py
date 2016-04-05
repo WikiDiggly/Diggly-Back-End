@@ -18,14 +18,26 @@ def score_topics(source_id, topics_desc_dict):
     for a,b in token_dict.iteritems():
         print a, "\n"
 
-    index = token_dict.keys().index(source_id)
+    index = 0
+    indices = {}
+    res_dict = {}
+
+    for tok in token_dict.keys():
+        indices.update({tok: index})
+        index += 1
+
+    main_index = indices[source_id]
 
     # this can take some time
     tf_idf = TfidfVectorizer(tokenizer=text_proc.tokenize, stop_words='english')
     tfidf_matrix = tf_idf.fit_transform(token_dict.values())
-    res = cosine_similarity(tfidf_matrix[index], tfidf_matrix)
+    res = cosine_similarity(tfidf_matrix[main_index], tfidf_matrix)
 
-    print "INDEX -->", index, "\n"
-    print "tfidf_matrix -->", vars(tfidf_matrix), "\n"
-    print "TFS RES -->", res, "\n"
-    return res
+    #print "INDEX -->", main_index, "\n"
+    #print "TFS RES -->", res[0], "\n"
+    #print "TFS MAIN_FIELDS -->", res[0][main_index], "\n"
+
+    for tok,ind in indices.iteritems():
+        res_dict.update({tok: res[0][ind]})
+
+    return res_dict
