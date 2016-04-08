@@ -69,6 +69,7 @@ class TopicLink(models.Model):
     base_score = models.FloatField()
     user_score = models.FloatField()
     score = models.FloatField()
+    score_keeper = models.BigIntegerField(default = 1) #number of scores recorded (1 by default) #need not be returned in JSON (to_json)
 
     def to_json(self):
          return dict(
@@ -77,7 +78,8 @@ class TopicLink(models.Model):
              description=self.description,
              base_score=self.base_score,
              user_score=self.user_score,
-             score=self.score)
+             score=self.score,
+             score_keeper=self.score_keeper)
 
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
