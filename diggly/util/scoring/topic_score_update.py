@@ -20,9 +20,9 @@ def update_score(tid_src, tid_dst):
 
             if tlink.target_id.article_id == topic_dst.article_id:
                 new_score = tl.user_score + (POSITIVE_WEIGHT/(tl.score_keeper * CURVE_FACTOR))
+                tlink.score_keeper+=1
 
             tlink.user_score = new_score
-            tlink.score_keeper+=1
             tlink.save()
             linked_topics.append(tlink)
 
