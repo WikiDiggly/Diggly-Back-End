@@ -95,13 +95,20 @@ def get_top_topiclinks(request, tid):
     return JSONResponse(serializer.data)
 
 #user feedback is received
-def track_topic(request, tid_src, tid_dst):
-    print request, "\n", tid_src, "\n", tid_dst, "\n"
-    update_score(tid_src, tid_dst)
+def track_topic(request):
+    #print request, "\n"
+    tid_src = request.POST.get('tid_src', '')
+    tid_dst = request.POST.get('tid_dst', '')
 
-    return HttpResponse('Done with request')
+    print "request-->", request, "\n"
+    print "vals -->", tid_src, "\n", tid_dst, "\n"
     
+    if(tid_src.strip() is '' or tid_dst.strip() is ''):
+        return HttpResponse("Invalid Parameters")
 
+    update_score(tid_src, tid_dst)
+    response = "Done with request [{}:{}]\n"
+    return HttpResponse(response.format(tid_src, tid_dst))
 
 
 def convertTopicLink(topiclinks):
