@@ -1,5 +1,6 @@
 from diggly.util.serializers.forms import StringListField
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.forms import ModelMultipleChoiceField
 from django.forms.models import model_to_dict
@@ -66,9 +67,9 @@ class TopicLink(models.Model):
     title = models.CharField(max_length = 256)
     description = models.TextField()
     wiki_link = models.URLField()
-    base_score = models.FloatField()
-    user_score = models.FloatField()
-    score = models.FloatField()
+    base_score = models.FloatField(validators = [MinValueValidator(-1.0), MaxValueValidator(1.0)])
+    user_score = models.FloatField(validators = [MinValueValidator(-1.0), MaxValueValidator(1.0)])
+    score = models.FloatField(validators = [MinValueValidator(-1.0), MaxValueValidator(1.0)])
     score_keeper = models.BigIntegerField(default = 1) #number of scores recorded (1 by default) #need not be returned in JSON (to_json)
 
     def to_json(self):

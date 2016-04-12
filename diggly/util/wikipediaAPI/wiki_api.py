@@ -121,7 +121,7 @@ class WikipediaHelper():
                     "wiki_link" : linked_topic.wiki_link,
                     "base_score" : rand_score,
                     "user_score" : 0.0,
-                    "score": rand_score
+                    "score": round(rand_score*0.5, 4)
                     }
 
             tlink = self.tl_creator.create_topiclink(tldata)
