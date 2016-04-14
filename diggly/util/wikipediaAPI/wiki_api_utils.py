@@ -34,6 +34,21 @@ class WikiAPIUtils():
 
         return i # randomly generated score
 
+    def fetch_relevant_topics(self, title_list, num_res):
+        res = []
+
+        while (len(res) < num_res):
+            max_index = len(title_list)
+            index = random.randrange(0, max_index)
+            title = title_list[index]
+
+            if not title in res:
+                res.append(title)
+                title_list.remove(title)
+
+        title_list.extend(res)
+        return res
+
     def parse_linked_pages(self, source_id, pages):
         if pages != None:
             pattern = re.compile(r'\d\$,')

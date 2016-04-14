@@ -1,7 +1,8 @@
 import random
+import traceback
 import threading
 
-from diggly.util.text_processor.score_process import score_topics
+from diggly.util.text_processor.score_process import score_topics, score_outlinks
 from diggly.util.serializers.topic_serializers import TopicLinkManager
 from diggly.util.wikipediaAPI.wiki_api_utils import WikiAPIUtils
 from diggly.util.wikipediaAPI.wiki_constants import *
@@ -37,14 +38,14 @@ class WikipediaHelper():
         topics = self.api_utils.parse_and_save_topic(pages, redirects)
 
         for tp in topics:
-            self.add_linked_topics(tp)  # retrieve linked topics
+            main_text = pages[str(tp.article_id)]['extract'].encode('utf-8')
+            self.add_linked_topics(tp, main_text)  # retrieve linked topics
 
         return topics
 
-    def add_linked_topics(self, source_topic):
+    def add_linked_topics(self, source_topic, main_text):
         tid = source_topic.article_id
         num_linked_topics = DEFAULT_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
-        max_linked_topics = MAX_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
         source_page = R_PAGEID.format(tid)
         r_url = LINKED_TOPICS_URL.format(source_page)
 
@@ -54,8 +55,7 @@ class WikipediaHelper():
         linked_titles = self.api_utils.parse_linked_pages(tid, pages)
 
         # select 6 random topics
-        # rel_links = self.fetch_relevant_topics(linked_titles, num_linked_topics)
-        rel_links = self.fetch_relevant_topics(linked_titles, max_linked_topics)
+        rel_links = linked_titles
         source_topic.outlinks = linked_titles
         all_linked_topics = []
 
@@ -69,6 +69,16 @@ class WikipediaHelper():
             rel_topics = []
 
             topic_desc_dict.update({source_topic.article_id: source_topic.description})
+            scored_outlinks_dict = score_outlinks(main_text, rel_links)
+
+            #TODO: comment out
+            sorted_outlinks = sorted(scored_outlinks_dict.items(), key=lambda x:x[1], reverse=True)
+            for a in sorted_outlinks:
+                print a[0], "-->", a[1]
+
+            top_links = sorted_outlinks[0:NUM_TOP_LINKS+1]
+            rel_links = [x[0] for x in top_links]
+            print "\n"
 
             #spun threads to create topic objects
             for i in range(1, MAX_NUM_THREADS + 1):
@@ -76,22 +86,17 @@ class WikipediaHelper():
                                         rel_topics, topic_desc_dict)
                 tmp_thread.start()
                 threads.append(tmp_thread)
-                print "Spun Topic Creator Thread #", thread_count, "\n"
+                #print "Spun Topic Creator Thread #", thread_count, "\n"
                 thread_count += 1
 
             # wait for threads to return
             for t in threads:
                 t.join()
 
-            print "Continuing Main Thread after topic creation...\n"
+            #print "Continuing Main Thread after topic creation...\n"
 
             # calculate score of related topics
-            print "About to start calculating scores\n"
             scored_desc_dict = score_topics(source_topic.article_id, topic_desc_dict)
-
-            for a, b in scored_desc_dict.iteritems():
-                print a, "-->", b, "\n"
-            print "\n Done Computing NEW SCORES FOR TOPICS:\n"
 
             # spun threads to create topic links
             del threads[:]
@@ -108,8 +113,15 @@ class WikipediaHelper():
             for t in threads:
                 t.join()
 
-            print "Exiting Main Thread...\n"
+            #print "Exiting Main Thread...\n"
             sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
+
+            #TODO: comment out
+            print "PRINTING FROM SORTED DICT\n"
+            sorted_desc_outlinks = sorted(scored_desc_dict.items(), key=lambda x:x[1], reverse=True)
+            for a in sorted_desc_outlinks:
+                print a[0], "-->", a[1]
+            print "DONE\n"
 
             # added like this to prevent Index out of bounds error on sorted_tl
             num_linked_topics = DEFAULT_NUM_LINKED_TOPICS
@@ -123,7 +135,7 @@ class WikipediaHelper():
 
         except Exception, E:
             print "Error: issue with threads"
-            print str(E)
+            traceback.print_exc()
 
     def spun_topic_creator(self, rel_links, rel_topics, topic_desc_dict):
         topic_name = None
@@ -144,8 +156,7 @@ class WikipediaHelper():
             linked_page = response[PAGE_RESP_KEY]
             redirected_page = response[REDIRECT_RESP_KEY] if REDIRECT_RESP_KEY in response else None
 
-            linked_topic = self.api_utils.parse_and_save_topic(linked_page, redirected_page)[
-                0]  # get the first element returned
+            linked_topic = self.api_utils.parse_and_save_topic(linked_page, redirected_page)[0]  # get the first element returned
 
             # add to topic_name -> description to dictionary
             thread_lock2.acquire()

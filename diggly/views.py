@@ -36,7 +36,7 @@ def explore_topic(request, tid):
 
         topic.linked_topics = topiclinks[0:7]
         if len(topic.linked_topics) == 0:
-            wiki_help.add_linked_topics(topic)
+            wiki_help.add_linked_topics(topic, None)
 
         data = json.dumps(topic.to_json())
         

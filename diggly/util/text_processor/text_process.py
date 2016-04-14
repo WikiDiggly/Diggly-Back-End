@@ -47,6 +47,7 @@ class Text_Process():
         stems = self.stem_tokens(tokens)
         return stems
 
+
     def clean_text(self, text):
         tokens = self.get_tokens(text)
         filtered = [w for w in tokens if not w in stopwords.words('english')]
@@ -78,7 +79,7 @@ class Text_Process():
     # private functions
     def __get_sentences(self, content, length):
         sentences = nltk.sent_tokenize(content.decode('utf-8'))
-        res = " ".join(sentences[0:length]) 
+        res = " ".join(sentences[0:length])
         return res
 
     def __get_words(self, content, length):
