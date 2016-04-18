@@ -43,6 +43,20 @@ class WikipediaHelper():
 
         return topics
 
+    def update_article(self, topic):
+        tid = topic.article_id
+        resources = self.api_utils.format_req(tid)
+        r_url = EXTRACT_URL.format(resources)
+
+        retrieve_flag = "extract"
+        response = self.api_utils.make_api_request(r_url, EXCONT, retrieve_flag)
+        pages = response[PAGE_RESP_KEY]
+
+        main_text = pages[str(tid)]['extract'].encode('utf-8')
+        self.add_linked_topics(topic, main_text)  # retrieve linked topics
+
+        return topic
+
     def add_linked_topics(self, source_topic, main_text):
         tid = source_topic.article_id
         num_linked_topics = DEFAULT_NUM_LINKED_TOPICS - len(source_topic.linked_topics)
@@ -53,9 +67,6 @@ class WikipediaHelper():
         response = self.api_utils.make_api_request(r_url, PLCONT, retrieve_flag)
         pages = response[PAGE_RESP_KEY]
         linked_titles = self.api_utils.parse_linked_pages(tid, pages)
-
-        # select 6 random topics
-        rel_links = linked_titles
         source_topic.outlinks = linked_titles
         all_linked_topics = []
 
@@ -69,31 +80,28 @@ class WikipediaHelper():
             rel_topics = []
 
             topic_desc_dict.update({source_topic.article_id: source_topic.description})
-            scored_outlinks_dict = score_outlinks(main_text, rel_links)
+            scored_outlinks_dict = score_outlinks(main_text, linked_titles)
+            sorted_outlinks = sorted(scored_outlinks_dict.items(), key=lambda x:x[1], reverse=True)
 
             #TODO: comment out
-            sorted_outlinks = sorted(scored_outlinks_dict.items(), key=lambda x:x[1], reverse=True)
-            for a in sorted_outlinks:
-                print a[0], "-->", a[1]
+            #for a in sorted_outlinks:
+            #    print a[0], "-->", a[1]
 
             top_links = sorted_outlinks[0:NUM_TOP_LINKS+1]
-            rel_links = [x[0] for x in top_links]
-            print "\n"
+            most_relevant_links = [x[0] for x in top_links]
+            #print "\n"
 
             #spun threads to create topic objects
             for i in range(1, MAX_NUM_THREADS + 1):
-                tmp_thread = FuncThread(thread_count, self.spun_topic_creator, rel_links,
+                tmp_thread = FuncThread(thread_count, self.spun_topic_creator, most_relevant_links,
                                         rel_topics, topic_desc_dict)
                 tmp_thread.start()
                 threads.append(tmp_thread)
-                #print "Spun Topic Creator Thread #", thread_count, "\n"
                 thread_count += 1
 
             # wait for threads to return
             for t in threads:
                 t.join()
-
-            #print "Continuing Main Thread after topic creation...\n"
 
             # calculate score of related topics
             scored_desc_dict = score_topics(source_topic.article_id, topic_desc_dict)
@@ -106,31 +114,28 @@ class WikipediaHelper():
                                         scored_desc_dict, rel_topics, topic_links)
                 tmp_thread.start()
                 threads.append(tmp_thread)
-                print "Spun Topic_Link Creator Thread #", thread_count, "\n"
                 thread_count += 1
 
             # wait for threads to return
             for t in threads:
                 t.join()
 
-            #print "Exiting Main Thread...\n"
             sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
 
             #TODO: comment out
-            print "PRINTING FROM SORTED DICT\n"
-            sorted_desc_outlinks = sorted(scored_desc_dict.items(), key=lambda x:x[1], reverse=True)
-            for a in sorted_desc_outlinks:
-                print a[0], "-->", a[1]
-            print "DONE\n"
+            #print "PRINTING FROM SORTED DICT\n"
+            #sorted_desc_outlinks = sorted(scored_desc_dict.items(), key=lambda x:x[1], reverse=True)
+            #for a in sorted_desc_outlinks:
+            #    print a[0], "-->", a[1]
+            #print "DONE\n"
 
             # added like this to prevent Index out of bounds error on sorted_tl
-            num_linked_topics = DEFAULT_NUM_LINKED_TOPICS
             if len(sorted_tl) < num_linked_topics:
                 all_linked_topics.extend(sorted_tl)
             else:
                 all_linked_topics.extend(sorted_tl[0:num_linked_topics + 1])
 
-            source_topic.linked_topics = all_linked_topics[0:6]
+            source_topic.linked_topics = all_linked_topics[0: num_linked_topics]
             source_topic.save()
 
         except Exception, E:

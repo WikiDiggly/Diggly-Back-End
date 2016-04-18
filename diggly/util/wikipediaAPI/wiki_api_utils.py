@@ -61,6 +61,9 @@ class WikiAPIUtils():
                     # if re.match(r'^\w+$', lk_title):
                     if re.match(r'^[a-zA-Z-_() ]+$', lk_title):
                         clean_title = self.clean_topic_title(lk_title)
+
+                        if clean_title is None or not clean_title: # prevent null and empty titles
+                            continue
                         titles.append(clean_title) # get title of linked article
 
             return titles

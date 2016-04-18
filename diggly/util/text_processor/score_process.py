@@ -13,7 +13,6 @@ def score_topics(source_id, topics_desc_dict):
     index = 0
 
     for tid, text in topics_desc_dict.iteritems():
-        print "TEXT-->", text
         lowers = text.lower()
         remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
         no_punctuation = lowers.translate(remove_punctuation_map)
@@ -25,8 +24,6 @@ def score_topics(source_id, topics_desc_dict):
 
     main_index = indices[source_id]
 
-    print "\n\nTOKEN_DICT.KEYS -->", token_dict.keys()
-    print "\n\nTOKEN_DICT.VALUES -->", token_dict.values()
     # this can take some time
     tf_idf = TfidfVectorizer(tokenizer=text_proc.tokenize, stop_words='english')
     tfidf_matrix = tf_idf.fit_transform(token_dict.values())
@@ -48,7 +45,6 @@ def score_outlinks(main_text, title_list):
     index = 0
 
     for title in title_list:
-        print "TITLE --->", title
         lowers = title.lower().replace("_", " ").replace("-", " ")
         len_titles.update({title: len(lowers.split(" "))})
         token_dict[title] = lowers

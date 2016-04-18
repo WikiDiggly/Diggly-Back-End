@@ -29,14 +29,14 @@ def explore_topic(request, tid):
         print "[LOG] Retrieving data from MongoDB"
         topic = get_redirect_id(tid)
         
-        if topic == None:
+        if topic is None:
             topic = Topic.objects.get(article_id=tid)
         
         topiclinks = TopicLink.objects.filter(source_id=topic.article_id)
 
         topic.linked_topics = topiclinks[0:7]
         if len(topic.linked_topics) == 0:
-            wiki_help.add_linked_topics(topic, None)
+            wiki_help.update_article(topic)
 
         data = json.dumps(topic.to_json())
         
