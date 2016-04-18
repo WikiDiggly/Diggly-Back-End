@@ -9,7 +9,6 @@ from models import Topic, TopicLink, TopicRedirect
 from rest_framework.renderers import JSONRenderer
 
 # 2015 wiki_diggly
-# prototype v1
 
 wiki_help = WikipediaHelper()
 #jpedia_mgt = JsonPediaManager(description_len, summary_len)
@@ -29,14 +28,17 @@ def explore_topic(request, tid):
         print "[LOG] Retrieving data from MongoDB"
         topic = get_redirect_id(tid)
         
-        if topic == None:
+        if topic is None:
             topic = Topic.objects.get(article_id=tid)
-        
-        topiclinks = TopicLink.objects.filter(source_id=topic.article_id)
 
-        topic.linked_topics = topiclinks[0:7]
-        if len(topic.linked_topics) == 0:
-            wiki_help.add_linked_topics(topic)
+
+        #topic_links = TopicLink.objects.filter(source_id=topic.article_id)
+        #sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
+        #topic.linked_topics = sorted_tl[0:7]
+        #topic.save()
+
+        if len(topic.get_linked_topics()) == 0:
+            wiki_help.update_article(topic)
 
         data = json.dumps(topic.to_json())
         
@@ -54,7 +56,7 @@ def get_topic_by_id(request, tid):
     try:
         topic = get_redirect_id(tid)
         
-        if topic == None:
+        if topic is None:
             topic = Topic.objects.get(article_id=tid)
 
         serializer = TopicSerializer(topic)
@@ -66,8 +68,8 @@ def get_topic_by_id(request, tid):
     return JSONResponse(serializer.data)
 
 
-#helper method
-#do not use in production
+# helper method
+# do not use in production
 def get_all_topiclinks(request, tid):
     print "LOG: get_all_topiclinks; tid ->", tid
 
@@ -94,7 +96,7 @@ def get_top_topiclinks(request, tid):
     
     return JSONResponse(serializer.data)
 
-#user feedback is received
+# user feedback is received
 def track_topic(request):
     #print request, "\n"
     tid_src = request.POST.get('tid_src', '')
@@ -116,24 +118,20 @@ def convertTopicLink(topiclinks):
 
     for tl in topiclinks:
         tmp = model_to_dict(tl)
-        print "tmp ->", tmp
         res.append(model_to_dict(tl))
 
     res_sorted = sorted(res, key=lambda instance: instance.score, reverse=True)
     return res_sorted
 
 
-#An HttpResponse that renders its content into JSON
+# an HttpResponse that renders its content into JSON
 class JSONResponse(HttpResponse):
     def __init__(self, data, **kwargs):
-    
-        #print data['linked_topics']   
-     
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
-#helper functions
+# helper functions
 def get_redirect_id(tid):
     print "LOG: get_redirect_id; tid ->", tid
 
