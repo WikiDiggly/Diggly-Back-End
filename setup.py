@@ -16,6 +16,7 @@ config = {
         'djangotoolbox==1.8.0',
         'flufl.enum==4.1',
         'nltk==3.1',
+        'numpy==1.11.0',
         'pymongo==2.8',
         'requests==2.9.1',
         'scipy=0.17.0',
