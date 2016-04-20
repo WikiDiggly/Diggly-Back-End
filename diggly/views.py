@@ -122,7 +122,7 @@ def track_topic(request):
     return HttpResponse(response.format(tid_src, tid_dst))
 
 #get json for displaying on front-page for trending topic (within past week/7 days)
-def get_homepage_trending(request):
+def get_topics_trending(request):
     article_ids = [queryset.source_id.article_id for queryset in TopicVisit.objects.filter(visit_timestamp__gte=(datetime.now()-timedelta(days=7)))]
     print "article_ids --> ", article_ids, "\n"    
     counter=collections.Counter(article_ids)  # print counter, counter.values(), counter.keys()
@@ -138,7 +138,7 @@ def get_homepage_trending(request):
         raise Http404("No trending topics found")
 
 #get json for displaying on front-page for popular topic (within past year/365 days)
-def get_homepage_popular(request):
+def get_topics_popular(request):
     article_ids = [queryset.source_id.article_id for queryset in TopicVisit.objects.filter(visit_timestamp__gte=(datetime.now()-timedelta(days=365)))]
     print "article_ids --> ", article_ids, "\n"    
     counter=collections.Counter(article_ids)  # print counter, counter.values(), counter.keys()
@@ -154,7 +154,7 @@ def get_homepage_popular(request):
         raise Http404("No popular topics found")
 
 #get json for displaying on front-page for (3) most recently visited topics
-def get_homepage_recent(request):        
+def get_topics_recent(request):        
     topic_visits = TopicVisit.objects.order_by('-visit_timestamp') #sort in desc order by date
     topic_visits = list(topic_visits)
     topics = list()
@@ -169,7 +169,7 @@ def get_homepage_recent(request):
         raise Http404("No recent topics found")
 
 #get json for displaying on front-page for (1) random topic
-def get_homepage_random(request):  
+def get_topics_random(request):  
     #send something random
     topic_visits = TopicVisit.objects.all()
     if(TopicVisit.objects.count() > 0):
