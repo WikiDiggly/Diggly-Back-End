@@ -21,8 +21,14 @@ urlpatterns = [
     #ex: /diggly/topics/explore/791/ 
     url(r'^topics/explore/(?P<tid>[0-9]+)/$', views.explore_topic, name='explore_topic'),
 
-    #ex: /diggly/track/1234/<user/session-based token from cookie>
+    #ex: /diggly/track/
     url(r'^topics/track/$', csrf_exempt(views.track_topic), name='track_topic'),
+
+    #ex: /diggly/homepage/trending/
+    url(r'^topics/homepage/trending/$', views.get_homepage_trending, name='get_homepage_trending'),
+    url(r'^topics/homepage/popular/$', views.get_homepage_popular, name='get_homepage_popular'),
+    url(r'^topics/homepage/recent/$', views.get_homepage_recent, name='get_homepage_recent'),
+    url(r'^topics/homepage/random/$', views.get_homepage_random, name='get_homepage_random'),
 
 
     #ex: /diggly/topics/sections/related/791/ 
