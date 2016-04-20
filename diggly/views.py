@@ -126,12 +126,12 @@ def get_homepage_trending(request):
     article_ids = [queryset.source_id.article_id for queryset in TopicVisit.objects.filter(visit_timestamp__gte=(datetime.now()-timedelta(days=7)))]
     print "article_ids --> ", article_ids, "\n"    
     counter=collections.Counter(article_ids)  # print counter, counter.values(), counter.keys()
-    most_common_topic_id = str(counter.most_common(1)[0]) #convert tuple to string
-    most_common_topic_id = most_common_topic_id.replace("(","").replace(")","").split(",") #sanitize and tokenize string
-    most_common_topic_id = most_common_topic_id[0] #get first value (key)
-    print(most_common_topic_id)
-    topic = Topic.objects.get(article_id=most_common_topic_id)
-    if topic:
+    if counter:
+        most_common_topic_id = str(counter.most_common(1)[0]) #convert tuple to string
+        most_common_topic_id = most_common_topic_id.replace("(","").replace(")","").split(",") #sanitize and tokenize string
+        most_common_topic_id = most_common_topic_id[0] #get first value (key)
+        print(most_common_topic_id)
+        topic = Topic.objects.get(article_id=most_common_topic_id)
         serializer = TopicSerializer(topic)
         return JSONResponse(serializer.data)
     else:
@@ -142,12 +142,12 @@ def get_homepage_popular(request):
     article_ids = [queryset.source_id.article_id for queryset in TopicVisit.objects.filter(visit_timestamp__gte=(datetime.now()-timedelta(days=365)))]
     print "article_ids --> ", article_ids, "\n"    
     counter=collections.Counter(article_ids)  # print counter, counter.values(), counter.keys()
-    most_common_topic_id = str(counter.most_common(1)[0]) #convert tuple to string
-    most_common_topic_id = most_common_topic_id.replace("(","").replace(")","").split(",") #sanitize and tokenize string
-    most_common_topic_id = most_common_topic_id[0] #get first value (key)
-    print(most_common_topic_id)
-    topic = Topic.objects.get(article_id=most_common_topic_id)
-    if topic:
+    if counter:
+        most_common_topic_id = str(counter.most_common(1)[0]) #convert tuple to string
+        most_common_topic_id = most_common_topic_id.replace("(","").replace(")","").split(",") #sanitize and tokenize string
+        most_common_topic_id = most_common_topic_id[0] #get first value (key)
+        print(most_common_topic_id)
+        topic = Topic.objects.get(article_id=most_common_topic_id)
         serializer = TopicSerializer(topic)
         return JSONResponse(serializer.data)
     else:
@@ -172,10 +172,13 @@ def get_homepage_recent(request):
 def get_homepage_random(request):  
     #send something random
     topic_visits = TopicVisit.objects.all()
-    random_index = random.randint(0, TopicVisit.objects.count() - 1)
-    random_topic_visit = topic_visits[random_index]
-    serializer = TopicSerializer(random_topic_visit.source_id)
-    return JSONResponse(serializer.data)
+    if(TopicVisit.objects.count() > 0):
+        random_index = random.randint(0, TopicVisit.objects.count() - 1)
+        random_topic_visit = topic_visits[random_index]
+        serializer = TopicSerializer(random_topic_visit.source_id)
+        return JSONResponse(serializer.data)
+    else:
+        raise Http404("No random topics found")
 
 def convertTopicLink(topiclinks):
     res = []
