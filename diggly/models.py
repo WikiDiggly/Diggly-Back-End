@@ -82,8 +82,8 @@ class TopicLink(models.Model):
 
     def to_json(self):
          return dict(
-             source=self.source.article_id,
-             target=self.target.article_id,
+             source=self.source_id.article_id,
+             target=self.target_id.article_id,
              description=self.description,
              base_score=self.base_score,
              user_score=self.user_score,
@@ -94,5 +94,8 @@ class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
  
+class TopicVisit(models.Model):
+    source_id = models.ForeignKey('Topic', related_name='topicvisit_source', to_field='article_id')
+    visit_timestamp = models.DateTimeField(auto_now_add=True) #no modification 
 
 
