@@ -54,6 +54,14 @@ class Topic(models.Model):
         res_sorted = sorted(res, key=lambda instance: instance['score'], reverse=True)    
         return res_sorted
 
+    def get_linked_topics(self):
+        topic_links = TopicLink.objects.filter(source_id=self.article_id)
+        sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
+        self.linked_topics = sorted_tl[0:7]
+        self.save()
+
+        return self.linked_topics
+
     def clean(self):
         #validate all linked_topics source_id
         if self.linked_topics != None:

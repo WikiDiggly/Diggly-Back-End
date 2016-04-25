@@ -27,7 +27,7 @@ def update_score(tid_src, tid_dst):
             linked_topics.append(tlink)
 
 
-        topic_links = TopicLink.objects.get(source_id=topic_src.article_id)
+        topic_links = TopicLink.objects.filter(source_id=topic_src.article_id)
         sorted_tl = sorted(topic_links, key=lambda instance: instance.score, reverse=True)
         
         topic_src.linked_topics = sorted_tl[0:7]

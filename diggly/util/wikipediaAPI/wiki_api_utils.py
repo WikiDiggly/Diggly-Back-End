@@ -19,7 +19,7 @@ class WikiAPIUtils():
         self.desc_length = desc_len
         self.summ_length = summ_len
 
-        self.t_processor = Text_Process(self.desc_length, self.summ_length)
+        self.t_processor = Text_Process()
         self.t_creator = TopicManager()
         self.tl_creator = TopicLinkManager()
         self.rd_creator = TopicRedirectManager()
@@ -34,6 +34,21 @@ class WikiAPIUtils():
 
         return i # randomly generated score
 
+    def fetch_relevant_topics(self, title_list, num_res):
+        res = []
+
+        while (len(res) < num_res):
+            max_index = len(title_list)
+            index = random.randrange(0, max_index)
+            title = title_list[index]
+
+            if not title in res:
+                res.append(title)
+                title_list.remove(title)
+
+        title_list.extend(res)
+        return res
+
     def parse_linked_pages(self, source_id, pages):
         if pages != None:
             pattern = re.compile(r'\d\$,')
@@ -46,6 +61,9 @@ class WikiAPIUtils():
                     # if re.match(r'^\w+$', lk_title):
                     if re.match(r'^[a-zA-Z-_() ]+$', lk_title):
                         clean_title = self.clean_topic_title(lk_title)
+
+                        if clean_title is None or not clean_title: # prevent null and empty titles
+                            continue
                         titles.append(clean_title) # get title of linked article
 
             return titles
