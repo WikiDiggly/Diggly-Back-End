@@ -2,11 +2,11 @@ import random
 import traceback
 import threading
 
+from diggly.util.diggly_threads import FuncThread
 from diggly.util.text_processor.score_process import score_topics, score_outlinks
 from diggly.util.serializers.topic_serializers import TopicLinkManager
 from diggly.util.wikipediaAPI.wiki_api_utils import WikiAPIUtils
 from diggly.util.wikipediaAPI.wiki_constants import *
-
 # 2016 wikidiggly
 
 thread_lock1 = threading.Lock()
@@ -216,13 +216,3 @@ class WikipediaHelper():
             else:
                 linked_topic = rel_topics.pop()
             thread_lock1.release()
-
-class FuncThread(threading.Thread):
-    def __init__(self, thread_id, target, *args):
-        self.thread_id = thread_id
-        self._target = target
-        self._args = args
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self._target(*self._args)
