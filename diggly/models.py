@@ -21,6 +21,10 @@ class LinkedTopicsField(ListField):
     def formfield(self, **kwargs):
         return ModelMultipleChoiceField(queryset=TopicLink.objects.all(), to_field_name="target_id", required=False, **kwargs)
 
+class RecentTopicsField(ListField):
+    def formfield(self, **kwargs):
+        return ModelMultipleChoiceField(queryset=Topic.objects.all(), to_field_name="article_id", required=False, **kwargs)
+
 #diggly application models
 class Topic(models.Model):
     article_title = models.CharField(max_length = 256, null=False)
@@ -30,6 +34,7 @@ class Topic(models.Model):
     wiki_link = models.URLField(null=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True) 
+    visit_counter = models.BigIntegerField(null=False, default=0)
     linked_topics = LinkedTopicsField(EmbeddedModelField('TopicLink'), blank=True, null=True)
     outlinks = OutlinkListField(models.CharField)
 
@@ -40,6 +45,7 @@ class Topic(models.Model):
             summary=self.summary, 
             description=self.description,
             wiki_link=self.wiki_link,
+            visit_counter=self.visit_counter,
             linked_topics=self.convert_linked_topics())
 
     def convert_linked_topics(self):
@@ -93,9 +99,9 @@ class TopicLink(models.Model):
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
- 
-class TopicVisit(models.Model):
-    source_id = models.ForeignKey('Topic', related_name='topicvisit_source', to_field='article_id')
-    visit_timestamp = models.DateTimeField(auto_now_add=True) #no modification 
 
-
+class FeaturedTopics(models.Model):
+    recent_topics = RecentTopicsField(EmbeddedModelField('Topic'), blank=True, null=False)
+    trending_topic = models.ForeignKey('Topic', related_name='trending_source', to_field='article_id', null=False)
+    popular_topic = models.ForeignKey('Topic', related_name='popular_source', to_field='article_id', null=False)
+    recent_topic_timestamp = models.DateTimeField(auto_now_add=True) #no modification

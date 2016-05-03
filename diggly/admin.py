@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import site, ModelAdmin
-from .models import Topic, TopicLink, TopicRedirect, TopicVisit
+from .models import Topic, TopicLink, TopicRedirect, FeaturedTopics
 
 
 #def linked_topics(instance):
@@ -12,4 +12,4 @@ from .models import Topic, TopicLink, TopicRedirect, TopicVisit
 admin.site.register(Topic)
 admin.site.register(TopicLink)
 admin.site.register(TopicRedirect)
-admin.site.register(TopicVisit)
+admin.site.register(FeaturedTopics)
