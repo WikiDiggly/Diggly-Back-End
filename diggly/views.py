@@ -122,7 +122,10 @@ def track_topic(request):
 #get json for displaying on front-page for trending topic (within past week/7 days)
 def get_topics_trending(request):
     featured_topics = FeaturedTopics.objects.all()[0]
-    trending_topic = featured_topics.trending_topic
+    random_index = 0
+    if(len(featured_topics.trending_topics) > 1):
+        random_index = random.randint(0, len(featured_topics.trending_topics) - 1)
+    trending_topic = featured_topics.trending_topics[random_index]
 
     if (trending_topic):
         serializer = TopicSerializer(trending_topic)

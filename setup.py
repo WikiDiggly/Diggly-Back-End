@@ -22,7 +22,8 @@ config = {
         'scipy=0.17.0',
         'scikit-learn=0.17.1',
         'wheel==0.24.0',
-        'pytest==2.8.7'
+        'pytest==2.8.7',
+	'beautifulsoup4==4.4.1'
     ],
     'tests_require': [],
     'packages': ['diggly'],
