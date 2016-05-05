@@ -25,6 +25,10 @@ class RecentTopicsField(ListField):
     def formfield(self, **kwargs):
         return ModelMultipleChoiceField(queryset=Topic.objects.all(), to_field_name="article_id", required=False, **kwargs)
 
+class TrendingTopicsField(ListField):
+    def formfield(self, **kwargs):
+        return ModelMultipleChoiceField(queryset=Topic.objects.all(), to_field_name="article_id", required=False, **kwargs)
+
 #diggly application models
 class Topic(models.Model):
     article_title = models.CharField(max_length = 256, null=False)
@@ -102,6 +106,7 @@ class TopicRedirect(models.Model):
 
 class FeaturedTopics(models.Model):
     recent_topics = RecentTopicsField(EmbeddedModelField('Topic'), blank=True, null=False)
-    trending_topic = models.ForeignKey('Topic', related_name='trending_source', to_field='article_id', null=False)
+    trending_topics = TrendingTopicsField(EmbeddedModelField('Topic'), blank=True, null=False) # models.ForeignKey('Topic', related_name='trending_source', to_field='article_id', null=False)
     popular_topic = models.ForeignKey('Topic', related_name='popular_source', to_field='article_id', null=False)
-    recent_topic_timestamp = models.DateTimeField(auto_now_add=True) #no modification
+    recent_topic_timestamp = models.DateTimeField(auto_now_add=True) #no modification; last updated date for recent topic(s)
+    trending_topics_timestamp = models.DateTimeField(auto_now_add=True) #no modification; when was trending topic(s) last updated?
