@@ -17,7 +17,7 @@ wiki_help = WikipediaHelper()
 def update_featured_object(topic):
     #Get featured topics instance
     now = datetime.now()
-    earlier_recent = timedelta(hours=1) #within last 1 hour (applies to recent topics)
+    earlier_recent = timedelta(minutes=15) #within last 15 mins (applies to recent topics)
     earlier_trending = timedelta(days=1) #within last 1 day (applies to trending topics)
 
     topic.visit_counter += 1
