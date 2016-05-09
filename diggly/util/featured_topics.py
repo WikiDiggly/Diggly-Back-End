@@ -16,7 +16,6 @@ wiki_help = WikipediaHelper()
 
 def update_featured_object(topic):
     #Get featured topics instance
-    featured_topics = None
     now = datetime.now()
     earlier_recent = timedelta(hours=1) #within last 1 hour (applies to recent topics)
     earlier_trending = timedelta(days=1) #within last 1 day (applies to trending topics)
@@ -81,7 +80,7 @@ def get_trending_topics():
             resp2_json = resp2.json()
             page_id = resp2_json['pageid']
             print "Adding page ID: ", page_id, "\n"
-            topic = None
+
             try:
                 print "[LOG] Retrieving data from MongoDB"
                 topic = get_redirect_id(page_id)
