@@ -112,7 +112,7 @@ def track_topic(request):
     print "request-->", request, "\n"
     print "vals -->", tid_src, "\n", tid_dst, "\n"
     
-    if(tid_src.strip() is '' or tid_dst.strip() is ''):
+    if(tid_src.strip() is '' or tid_dst.strip() is '' or tid_src.strip() == tid_dst.strip()):
         return HttpResponse("Invalid Parameters")
 
     update_score(tid_src, tid_dst)
