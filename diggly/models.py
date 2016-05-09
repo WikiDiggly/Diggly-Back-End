@@ -42,6 +42,9 @@ class Topic(models.Model):
     linked_topics = LinkedTopicsField(EmbeddedModelField('TopicLink'), blank=True, null=True)
     outlinks = OutlinkListField(models.CharField)
 
+    class Meta:
+        ordering = ['article_title']
+
     def to_json(self):
         return dict(
             article_id=self.article_id, 
@@ -77,7 +80,10 @@ class Topic(models.Model):
         if self.linked_topics != None:
             for tl in self.linked_topics:
                 if self.article_id != tl.source_id.article_id:
-                    raise ValidationError('Linked topic source_id is different from main topic article_id') 
+                    raise ValidationError('Linked topic source_id is different from main topic article_id')
+
+    def __unicode__(self):
+        return self.article_title
 
 class TopicLink(models.Model):
     source_id = models.ForeignKey('Topic', related_name='topiclink_source', to_field='article_id')
@@ -90,6 +96,9 @@ class TopicLink(models.Model):
     score = models.FloatField(validators = [MinValueValidator(-1.0), MaxValueValidator(1.0)])
     score_keeper = models.BigIntegerField(default = 1) #number of scores recorded (1 by default) #need not be returned in JSON (to_json)
 
+    class Meta:
+        ordering = ['description']
+
     def to_json(self):
          return dict(
              source=self.source_id.article_id,
@@ -100,9 +109,18 @@ class TopicLink(models.Model):
              score=self.score,
              score_keeper=self.score_keeper)
 
+    def __unicode__(self):
+        return self.description
+
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
     redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
+
+    class Meta:
+        ordering = ['source_id']
+
+    def __unicode__(self):
+        return str(self.source_id)
 
 class FeaturedTopics(models.Model):
     recent_topics = RecentTopicsField(EmbeddedModelField('Topic'), blank=True, null=False)

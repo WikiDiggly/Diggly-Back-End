@@ -27,6 +27,7 @@ def update_featured_object(topic):
     try:
         featured_topics = FeaturedTopics.objects.all()[0]
         recent_topics = featured_topics.recent_topics
+
         #Update recent topics object once an hour while ensuring all objects are unique
         if topic not in recent_topics and featured_topics.recent_topic_timestamp < (now-earlier_recent):
             while len(recent_topics) >= 3:
@@ -54,6 +55,7 @@ def update_featured_object(topic):
 
         max_visit_counter = Topic.objects.aggregate(Max('visit_counter'))['visit_counter__max']
         new_popular_topic = Topic.objects.filter(visit_counter=max_visit_counter)[0]
+        
         featured_topics.popular_topic = new_popular_topic
         featured_topics.trending_topics = get_trending_topics()
         featured_topics.recent_topic_timestamp = now 
