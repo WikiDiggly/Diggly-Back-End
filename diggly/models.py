@@ -114,7 +114,7 @@ class TopicLink(models.Model):
 
 class TopicRedirect(models.Model):
     source_id = models.BigIntegerField(primary_key=True, null=False)
-    redirect_topic = models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
+    redirect_topic =  models.ForeignKey('Topic', related_name='redirect_to', to_field='article_id')
 
     class Meta:
         ordering = ['source_id']

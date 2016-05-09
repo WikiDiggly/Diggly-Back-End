@@ -54,6 +54,7 @@ def update_featured_object(topic):
 
         max_visit_counter = Topic.objects.aggregate(Max('visit_counter'))['visit_counter__max']
         new_popular_topic = Topic.objects.filter(visit_counter=max_visit_counter)[0]
+        
         featured_topics.popular_topic = new_popular_topic
         featured_topics.trending_topics = get_trending_topics()
         featured_topics.recent_topic_timestamp = now 
