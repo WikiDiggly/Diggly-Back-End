@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     
     #ex: /diggly/topics/
-    url(r'^topics/$', views.list_topics, name='list_topics'),
+    #url(r'^topics/$', views.list_topics, name='list_topics'),
     
     #ex: /diggly/topics/791/ 
     url(r'^topics/(?P<tid>[0-9]+)/$', views.get_topic_by_id, name='get_topic_by_id'),    
