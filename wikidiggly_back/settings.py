@@ -22,9 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gspv0#2z%w&jxsmzys=-hciodeh45_75^$#nu$p&%q411*rd$@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'rack36.cs.drexel.edu', 'diggly.xyz']
 
 
 # Application definition
