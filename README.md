@@ -1,4 +1,4 @@
-# Diggly-Back-Prototype
+# Diggly-Back-End
 A repository for the backend system of the Diggly Project
 
 Setting up the Diggly-Backend
